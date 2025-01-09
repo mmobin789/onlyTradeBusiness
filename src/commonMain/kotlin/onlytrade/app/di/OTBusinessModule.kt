@@ -12,7 +12,7 @@ import org.koin.core.context.startKoin
 import org.koin.dsl.module
 
 object OTBusinessModule {
-
+    private var diInit = false
     private val commonModule = module {
         single {
             HttpClient {
@@ -32,9 +32,14 @@ object OTBusinessModule {
     }
 
     fun run(platformInit: KoinApplication.() -> Unit) {
+
+        if (diInit)
+            return
+
         startKoin {
             platformInit()
             modules(commonModule, LoginDI.module)
+            diInit = true
         }
     }
 }

@@ -1,10 +1,21 @@
 package onlytrade.app.viewmodel.login.usecase
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 
 class EmailLoginUseCase(private val loginRepository: LoginRepository) {
 
-    operator fun invoke(email:String) = loginRepository.loginWithEmail(email)
+    suspend operator fun invoke(email: String, pwd: String) = withContext(Dispatchers.IO) {
+        loginRepository.loginWithEmail(email, pwd)?.run {
+            Result.OK(this)
+        } ?: Result.Error()
+    }
 
+    sealed class Result {
+        data class OK(val result: String) : Result()
+        data class Error(val error: String? = null) : Result()
+    }
 
 }

@@ -7,7 +7,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 
 class LoginWebApi(private val client: HttpClient) {
-    suspend fun greeting(): String {
+    suspend fun greeting(): String? {
         val response: HttpResponse? = try {
             client.get("https://ktor.io/docs/")
         } catch (e: Exception) {
@@ -16,6 +16,6 @@ class LoginWebApi(private val client: HttpClient) {
             }
             null
         }
-        return response?.bodyAsText() ?: "Network Call Failed."
+        return response?.bodyAsText()
     }
 }

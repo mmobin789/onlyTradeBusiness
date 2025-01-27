@@ -1,11 +1,11 @@
 package onlytrade.app.viewmodel.login.repository
 
-import onlytrade.app.viewmodel.login.repository.data.remote.LoginWebApi
+import onlytrade.app.viewmodel.login.repository.data.remote.LoginApiClient
 
-class LoginRepository(private val loginWebApi: LoginWebApi) {
+class LoginRepository(private val loginApiClient: LoginApiClient) {
 
-    suspend fun loginWithPhone(mobileNo: String, pwd: String) = loginWebApi.greeting()
+    suspend fun loginWithPhone(mobileNo: String, pwd: String) = loginApiClient.greeting()
 
 
-    suspend fun loginWithEmail(email: String, pwd: String) = loginWebApi.greeting()
+    suspend fun loginWithEmail(email: String, pwd: String) = loginApiClient.greeting()
 }

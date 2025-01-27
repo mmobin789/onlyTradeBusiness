@@ -6,7 +6,7 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 
-class LoginWebApi(private val client: HttpClient) {
+class LoginApiClient(private val client: HttpClient) { //todo
     suspend fun greeting(): String? {
         val response: HttpResponse? = try {
             client.get("https://ktor.io/docs/")
@@ -17,5 +17,13 @@ class LoginWebApi(private val client: HttpClient) {
             null
         }
         return response?.bodyAsText()
+    }
+
+    suspend fun loginByMobile() {
+
+    }
+
+    suspend fun loginByEmail() {
+
     }
 }

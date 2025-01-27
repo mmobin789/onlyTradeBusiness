@@ -1,7 +1,7 @@
 package onlytrade.app.viewmodel.login.di
 
 import onlytrade.app.viewmodel.login.repository.LoginRepository
-import onlytrade.app.viewmodel.login.repository.data.remote.LoginWebApi
+import onlytrade.app.viewmodel.login.repository.data.remote.LoginApiClient
 import onlytrade.app.viewmodel.login.ui.LoginViewModel
 import onlytrade.app.viewmodel.login.usecase.EmailLoginUseCase
 import onlytrade.app.viewmodel.login.usecase.MobileLoginUseCase
@@ -13,7 +13,7 @@ object LoginDI {
 
     val module = module {
         viewModelOf(::LoginViewModel)
-        factoryOf(::LoginWebApi)
+        factoryOf(::LoginApiClient)
         factoryOf(::LoginRepository)
         factoryOf(::MobileLoginUseCase)
         factoryOf(::EmailLoginUseCase)

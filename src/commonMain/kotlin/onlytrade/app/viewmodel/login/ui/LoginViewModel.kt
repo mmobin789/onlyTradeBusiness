@@ -14,10 +14,10 @@ import onlytrade.app.viewmodel.login.ui.LoginUiState.Loading
 import onlytrade.app.viewmodel.login.ui.LoginUiState.MobileNoFormatInputError
 import onlytrade.app.viewmodel.login.ui.LoginUiState.SmallPwdInputError
 import onlytrade.app.viewmodel.login.usecase.EmailLoginUseCase
-import onlytrade.app.viewmodel.login.usecase.MobileLoginUseCase
+import onlytrade.app.viewmodel.login.usecase.PhoneLoginUseCase
 
 class LoginViewModel(
-    private val mobileLoginUseCase: MobileLoginUseCase,
+    private val phoneLoginUseCase: PhoneLoginUseCase,
     private val emailLoginUseCase: EmailLoginUseCase
 ) : ViewModel() {
 
@@ -68,8 +68,8 @@ class LoginViewModel(
             } else {
                 loading()
 
-                when (mobileLoginUseCase(mobileNo, pwd)) {
-                    is MobileLoginUseCase.Result.OK -> {
+                when (phoneLoginUseCase(mobileNo, pwd)) {
+                    is PhoneLoginUseCase.Result.OK -> {
                         LoginUiState.LoggedIn()
                     }
 

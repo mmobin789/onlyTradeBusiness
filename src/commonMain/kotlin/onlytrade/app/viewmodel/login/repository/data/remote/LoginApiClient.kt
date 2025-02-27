@@ -3,7 +3,6 @@ package onlytrade.app.viewmodel.login.repository.data.remote
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.request.basicAuth
-import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
@@ -11,21 +10,10 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
 class LoginApiClient(private val client: HttpClient) { //todo
-    suspend fun greeting(): String? {
-        val response: HttpResponse? = try {
-            client.get("https://ktor.io/docs/")
-        } catch (e: Exception) {
-            Napier.e {
-                e.stackTraceToString()
-            }
-            null
-        }
-        return response?.bodyAsText()
-    }
 
     suspend fun loginByPhone(phone: String, pwd: String): String? {
         val response: HttpResponse? = try {
-            client.post("http://127.0.0.1:8080/login/phone") {
+            client.post("http://onlytrade.ap-south-1.elasticbeanstalk.com/login/phone") {
                 contentType(ContentType.Application.Json)
                 basicAuth(phone, pwd)
             }
@@ -40,7 +28,7 @@ class LoginApiClient(private val client: HttpClient) { //todo
 
     suspend fun loginByEmail(email: String, pwd: String): String? {
         val response: HttpResponse? = try {
-            client.post("http://127.0.0.1:8080/login/email") {
+            client.post("http://onlytrade.ap-south-1.elasticbeanstalk.com/login/email") {
                 contentType(ContentType.Application.Json)
                 basicAuth(email, pwd)
             }

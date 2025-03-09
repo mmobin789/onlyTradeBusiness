@@ -1,9 +1,9 @@
-package onlytrade.app.viewmodel.product.add.repository.data.remote.model.request
+package onlytrade.app.viewmodel.product.add.repository.data.remote.request
 
 
 data class AddProductRequest(
     val name: String,
-    val category: String,
+    val subcategoryId: Int,
     val description: String,
     val estPrice: Double
 )

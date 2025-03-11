@@ -9,6 +9,7 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import onlytrade.app.viewmodel.login.di.LoginDI
+import onlytrade.app.viewmodel.product.add.di.AddProductDI
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -43,7 +44,7 @@ object OTBusinessModule {
 
         startKoin {
             platformInit()
-            modules(commonModule, LoginDI.module)
+            modules(commonModule, LoginDI.module, AddProductDI.module)
             diInit = true
         }
     }

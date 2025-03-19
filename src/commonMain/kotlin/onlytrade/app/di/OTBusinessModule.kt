@@ -25,7 +25,7 @@ object OTBusinessModule {
                 install(Logging) {
                     logger = object : Logger {
                         override fun log(message: String) {
-                            Napier.v("HTTP Client", null, message)
+                            Napier.d(message = message)
                         }
 
                     }

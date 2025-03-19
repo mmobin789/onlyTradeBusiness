@@ -12,8 +12,9 @@ import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.LessImagesSelect
 import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.Loading
 import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.MoreImagesSelected
 import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.TitleBlank
+import onlytrade.app.viewmodel.product.usecase.AddProductUseCase
 
-class AddProductViewModel : ViewModel() {
+class AddProductViewModel(private val addProductUseCase: AddProductUseCase) : ViewModel() {
     var uiState: MutableStateFlow<AddProductUIState> = MutableStateFlow(Idle)
         private set
 
@@ -29,6 +30,7 @@ class AddProductViewModel : ViewModel() {
     fun addProduct(
         title: String,
         categoryId: Int,
+        subcategoryId: Int,
         description: String,
         estPrice: String,
         images: List<ByteArray>

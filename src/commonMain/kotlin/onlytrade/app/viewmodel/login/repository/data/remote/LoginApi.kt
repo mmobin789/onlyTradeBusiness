@@ -9,11 +9,11 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
-class LoginApiClient(private val client: HttpClient) { //todo
+class LoginApi(private val client: HttpClient) { //todo
 
     suspend fun loginByPhone(phone: String, pwd: String): String? {
         val response: HttpResponse? = try {
-            client.post("http://onlytrade.ap-south-1.elasticbeanstalk.com/login/phone") {
+            client.post("https://onlytrade.co/login/phone") {
                 contentType(ContentType.Application.Json)
                 basicAuth(phone, pwd)
             }
@@ -28,7 +28,7 @@ class LoginApiClient(private val client: HttpClient) { //todo
 
     suspend fun loginByEmail(email: String, pwd: String): String? {
         val response: HttpResponse? = try {
-            client.post("http://onlytrade.ap-south-1.elasticbeanstalk.com/login/email") {
+            client.post("https://onlytrade.co/login/email") {
                 contentType(ContentType.Application.Json)
                 basicAuth(email, pwd)
             }

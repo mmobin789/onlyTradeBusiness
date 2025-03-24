@@ -18,7 +18,7 @@ class ProductApi(private val client: HttpClient) { //todo
 
     suspend fun addProduct(addProductRequest: AddProductRequest) = try {
         val httpResponse = client.post("https://onlytrade.co/product/add") {
-            basicAuth("03217004104", "0000000")
+            basicAuth("test@ot.co", "test123") //todo
             setBody(MultiPartFormDataContent(formData {
                 append(
                     "addProductRequest",

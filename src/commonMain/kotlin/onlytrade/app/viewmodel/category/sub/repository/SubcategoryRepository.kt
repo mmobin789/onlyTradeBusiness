@@ -1,4 +1,4 @@
 package onlytrade.app.viewmodel.category.sub.repository
 
-class SubcategoryRepository {
+class SubcategoryRepository { //todo
 }

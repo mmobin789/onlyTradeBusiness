@@ -1,7 +1,7 @@
 package onlytrade.app.viewmodel.product.usecase
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import onlytrade.app.IODispatcher
 import onlytrade.app.viewmodel.product.add.repository.data.remote.request.AddProductRequest
 import onlytrade.app.viewmodel.product.repository.ProductRepository
 
@@ -14,7 +14,7 @@ class AddProductUseCase(private val productRepository: ProductRepository) {
         estPrice: Double,
         productImages: List<ByteArray>
     ) =
-        withContext(Dispatchers.Default) {
+        withContext(IODispatcher) {
             val addProductRequest = AddProductRequest(
                 name = name,
                 description = description,

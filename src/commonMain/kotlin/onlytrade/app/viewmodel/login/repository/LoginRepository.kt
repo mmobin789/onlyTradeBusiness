@@ -6,6 +6,5 @@ class LoginRepository(private val loginApi: LoginApi) {
 
     suspend fun loginWithPhone(mobileNo: String, pwd: String) = loginApi.loginByPhone(mobileNo, pwd)
 
-
     suspend fun loginWithEmail(email: String, pwd: String) = loginApi.loginByEmail(email, pwd)
 }

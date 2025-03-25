@@ -3,6 +3,7 @@ package onlytrade.app.viewmodel.login.usecase
 import kotlinx.coroutines.withContext
 import onlytrade.app.IODispatcher
 import onlytrade.app.viewmodel.login.repository.LoginRepository
+import onlytrade.app.viewmodel.login.repository.data.remote.model.response.LoginResponse
 
 class EmailLoginUseCase(private val loginRepository: LoginRepository) {
 
@@ -13,7 +14,7 @@ class EmailLoginUseCase(private val loginRepository: LoginRepository) {
     }
 
     sealed class Result {
-        data class OK(val result: String) : Result()
+        data class OK(val result: LoginResponse) : Result()
         data class Error(val error: String? = null) : Result()
     }
 

@@ -21,13 +21,15 @@ class ProductApi(private val client: HttpClient) { //todo
             basicAuth("test@ot.co", "test123") //todo
             setBody(MultiPartFormDataContent(formData {
                 append(
-                    "addProductRequest",
+                    "AddProductRequest",
                     Json.encodeToString(addProductRequest),
                     Headers.build {
                         append(HttpHeaders.ContentType, "application/json")
                     })
-                addProductRequest.productImages!!.forEach { //product Images are guaranteed to be non null here.
-                    append("productImages", it)
+                addProductRequest.productImages!!.forEach{ //product Images are guaranteed to be non null here.
+                    append("productImage${it+1}", it,Headers.build {
+                        append(HttpHeaders.ContentType, "image/jpeg") // Or "image/png" based on format
+                    })
                 }
             }))
         }

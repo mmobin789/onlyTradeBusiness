@@ -26,9 +26,14 @@ class ProductApi(private val client: HttpClient) { //todo
                     Headers.build {
                         append(HttpHeaders.ContentType, "application/json")
                     })
-                addProductRequest.productImages!!.forEach{ //product Images are guaranteed to be non null here.
-                    append("productImage${it+1}", it,Headers.build {
-                        append(HttpHeaders.ContentType, "image/jpeg") // Or "image/png" based on format
+                addProductRequest.productImages!!.forEach { //product Images are guaranteed to be non null here.
+                    val key = "productImage${it + 1}"
+                    append(key, it, Headers.build {
+                        append(HttpHeaders.ContentType, "image/jpeg") // ✅ Correct Content-Type
+                        append(
+                            HttpHeaders.ContentDisposition,
+                            "form-data; name=\"productImage\"; filename=\"$key.jpg\""
+                        ) // ✅ Ensures it's treated as a file
                     })
                 }
             }))

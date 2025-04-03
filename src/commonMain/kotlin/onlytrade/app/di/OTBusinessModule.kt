@@ -3,6 +3,7 @@ package onlytrade.app.di
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
@@ -19,6 +20,11 @@ object OTBusinessModule {
     private val commonModule = module {
         single {
             HttpClient {
+                install(HttpTimeout) {
+                    requestTimeoutMillis = 120000  // 120 seconds (increase as needed)
+                    connectTimeoutMillis = 60000   // 60 seconds
+                    socketTimeoutMillis = 120000   // 120 seconds
+                }
                 install(ContentNegotiation) {
                     json()
                 }

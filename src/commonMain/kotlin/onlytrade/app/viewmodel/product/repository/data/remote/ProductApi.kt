@@ -11,6 +11,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import kotlinx.serialization.json.Json
+import onlytrade.app.viewmodel.login.repository.data.remote.LoginApi
 import onlytrade.app.viewmodel.product.add.repository.data.remote.request.AddProductRequest
 import onlytrade.app.viewmodel.product.add.repository.data.remote.response.AddProductResponse
 
@@ -19,7 +20,7 @@ class ProductApi(private val client: HttpClient) { //todo
     suspend fun addProduct(addProductRequest: AddProductRequest) =
         try {
             val httpResponse = client.post("https://onlytrade.co/product/add") {
-                header(HttpHeaders.Authorization, "Bearer token")
+                header(HttpHeaders.Authorization, "Bearer ${LoginApi.jwtToken}") //todo get token here from local storage.
 
                 setBody(MultiPartFormDataContent(formData {
                     append(

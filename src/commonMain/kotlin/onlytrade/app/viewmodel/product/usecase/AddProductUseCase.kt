@@ -24,7 +24,7 @@ class AddProductUseCase(private val productRepository: ProductRepository) {
 
             )
             productRepository.addProduct(addProductRequest = addProductRequest)?.run {
-                if (statusCode == 201) // product processing for review.
+                if (status == 201) // product processing for review.
                     Result.OK(result = msg)
                 else Result.Error(error = msg)
             } ?: Result.Error()

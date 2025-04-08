@@ -14,7 +14,7 @@ import onlytrade.app.viewmodel.login.repository.data.remote.model.response.Login
 class LoginApi(private val client: HttpClient) {
 
     companion object { //todo remove this block for testing only.
-        var jwtToken = ""
+        var jwtToken: String? = ""
     }
 
     suspend fun loginByPhone(phone: String, pwd: String) = try {
@@ -23,7 +23,7 @@ class LoginApi(private val client: HttpClient) {
             setBody(PhoneLoginRequest(phone, pwd))
         }
         httpResponse.body<LoginResponse>().also {
-           jwtToken = it.jwtToken
+            jwtToken = it.jwtToken
         }
     } catch (e: Exception) {
         Napier.e {

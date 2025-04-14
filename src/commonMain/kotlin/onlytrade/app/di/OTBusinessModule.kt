@@ -1,5 +1,6 @@
 package onlytrade.app.di
 
+import com.russhwolf.settings.Settings
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
@@ -40,6 +41,9 @@ object OTBusinessModule {
                     Napier.base(DebugAntilog())
                 }
             }
+        }
+        single {
+            Settings() //key-value local storage for kmp based on minimal and default platform impl.
         }
     }
 

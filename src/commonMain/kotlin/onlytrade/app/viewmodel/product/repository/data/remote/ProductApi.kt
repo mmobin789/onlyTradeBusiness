@@ -45,7 +45,7 @@ class ProductApi(private val client: HttpClient) { //todo
                     }
                 }))
             }
-            httpResponse.body<AddProductResponse>().copy(statusCode = httpResponse.status.value)
+            httpResponse.body<AddProductResponse>()
         } catch (e: Exception) {
             Napier.e {
                 e.stackTraceToString()

@@ -1,5 +1,6 @@
 package onlytrade.app.viewmodel.product.usecase
 
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.withContext
 import onlytrade.app.IODispatcher
 import onlytrade.app.viewmodel.product.add.repository.data.remote.request.AddProductRequest
@@ -24,7 +25,7 @@ class AddProductUseCase(private val productRepository: ProductRepository) {
 
             )
             productRepository.addProduct(addProductRequest = addProductRequest)?.run {
-                if (statusCode == 201) // product processing for review.
+                if (status == HttpStatusCode.Created.value) // product processing for review.
                     Result.OK(result = msg)
                 else Result.Error(error = msg)
             } ?: Result.Error()

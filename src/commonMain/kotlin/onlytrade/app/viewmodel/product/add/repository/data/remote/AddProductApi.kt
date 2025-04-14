@@ -1,4 +1,4 @@
-package onlytrade.app.viewmodel.product.repository.data.remote
+package onlytrade.app.viewmodel.product.add.repository.data.remote
 
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
@@ -15,7 +15,7 @@ import onlytrade.app.viewmodel.login.repository.data.remote.LoginApi
 import onlytrade.app.viewmodel.product.add.repository.data.remote.request.AddProductRequest
 import onlytrade.app.viewmodel.product.add.repository.data.remote.response.AddProductResponse
 
-class ProductApi(private val client: HttpClient) { //todo
+class AddProductApi(private val client: HttpClient) { //todo
 
     suspend fun addProduct(addProductRequest: AddProductRequest) =
         try {

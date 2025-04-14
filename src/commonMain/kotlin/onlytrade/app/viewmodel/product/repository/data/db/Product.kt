@@ -1,4 +1,4 @@
-package onlytrade.app.viewmodel.product.add.repository.data.db
+package onlytrade.app.viewmodel.product.repository.data.db
 
 import kotlinx.serialization.Serializable
 
@@ -9,5 +9,6 @@ data class Product(
     val userId: Int,
     val name: String,
     val description: String,
-    val estPrice: Double
+    val estPrice: Double,
+    val imageUrls: String
 )

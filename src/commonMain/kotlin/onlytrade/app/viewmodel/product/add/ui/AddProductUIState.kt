@@ -10,8 +10,8 @@ sealed class AddProductUIState {
     data object EstPriceBlank : AddProductUIState()
     data object EstPriceLow : AddProductUIState()
     data object ImagesNotSelected : AddProductUIState()
-    data class LessImagesSelected(val difference: Int) : AddProductUIState()
-    data class MoreImagesSelected(val difference: Int) : AddProductUIState()
-    data class AddProductFailed(val error: String? = null) : AddProductUIState()
-    data class ProductInReview(val data: String) : AddProductUIState()
+    data object LessImagesSelected : AddProductUIState()
+    data object MoreImagesSelected : AddProductUIState()
+    data class AddProductFailed(val error: String) : AddProductUIState()
+    data object ProductInReview : AddProductUIState()
 }

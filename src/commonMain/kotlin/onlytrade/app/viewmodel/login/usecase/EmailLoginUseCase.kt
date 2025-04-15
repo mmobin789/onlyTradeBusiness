@@ -1,21 +1,23 @@
 package onlytrade.app.viewmodel.login.usecase
 
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.withContext
 import onlytrade.app.IODispatcher
 import onlytrade.app.viewmodel.login.repository.LoginRepository
-import onlytrade.app.viewmodel.login.repository.data.remote.model.response.LoginResponse
 
 class EmailLoginUseCase(private val loginRepository: LoginRepository) {
 
     suspend operator fun invoke(email: String, pwd: String) = withContext(IODispatcher) {
-        loginRepository.loginWithEmail(email, pwd)?.run {
-            Result.OK(this)
-        } ?: Result.Error()
+        loginRepository.loginWithEmail(email, pwd).run {
+            if (statusCode == HttpStatusCode.OK.value)
+                Result.OK
+            else Result.Error(error = error ?: "Something went wrong.")
+        }
     }
 
     sealed class Result {
-        data class OK(val result: LoginResponse) : Result()
-        data class Error(val error: String? = null) : Result()
+        data object OK : Result()
+        data class Error(val error: String) : Result()
     }
 
 }

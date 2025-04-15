@@ -80,13 +80,14 @@ class AddProductViewModel(private val addProductUseCase: AddProductUseCase) : Vi
         }
 
         if (images.size < 3) {
-            uiState.value = LessImagesSelected(difference = 9 - images.size)
+            uiState.value = LessImagesSelected
         }
 
         if (images.size > 9) {
-            uiState.value = MoreImagesSelected(difference = images.size - 9)
+            uiState.value = MoreImagesSelected
         }
 
+        loading()
 
         viewModelScope.launch {
             uiState.value = when (val result = addProductUseCase(
@@ -96,8 +97,8 @@ class AddProductViewModel(private val addProductUseCase: AddProductUseCase) : Vi
                 estPrice = estPriceD,
                 productImages = images
             )) {
-                is Result.OK -> ProductInReview(result.result)
-                else -> AddProductFailed()
+                Result.OK -> ProductInReview
+                is Result.Error -> AddProductFailed(error = result.error)
             }
         }
     }

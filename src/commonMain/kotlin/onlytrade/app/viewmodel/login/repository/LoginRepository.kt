@@ -8,19 +8,25 @@ import onlytrade.app.viewmodel.login.repository.data.remote.LoginApi
 import onlytrade.app.viewmodel.login.repository.data.remote.model.response.LoginResponse
 
 class LoginRepository(private val loginApi: LoginApi, private val localPrefs: Settings) {
+    var jwtToken: String? = null
+        private set
 
     suspend fun loginWithPhone(mobileNo: String, pwd: String) =
-        loginApi.loginByPhone(mobileNo, pwd)?.also { it.saveLoginInfo() }
+        loginApi.loginByPhone(mobileNo, pwd).also { it.saveLoginInfo() }
 
 
     suspend fun loginWithEmail(email: String, pwd: String) =
-        loginApi.loginByEmail(email, pwd)?.also { it.saveLoginInfo() }
+        loginApi.loginByEmail(email, pwd).also { it.saveLoginInfo() }
 
-    fun isUserLoggedIn() = localPrefs.getStringOrNull(JWT_TOKEN).isNullOrBlank().not()
+    fun isUserLoggedIn(): Boolean {
+        jwtToken = localPrefs.getStringOrNull(JWT_TOKEN)
+        return jwtToken.isNullOrBlank().not()
+    }
 
 
     private fun LoginResponse.saveLoginInfo() {
         jwtToken?.run {
+            this@LoginRepository.jwtToken = this
             localPrefs.putString(JWT_TOKEN, this)
         }
         user?.run {

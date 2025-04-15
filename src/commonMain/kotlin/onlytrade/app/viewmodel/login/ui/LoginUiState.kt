@@ -10,6 +10,6 @@ sealed class LoginUiState {
     data object MobileNoFormatInputError : LoginUiState()
     data object BlankPwdInputError : LoginUiState()
     data object SmallPwdInputError : LoginUiState()
-    data class LoggedIn(val data: String? = null) : LoginUiState()
-    data class ApiError(val error: String? = null) : LoginUiState()
+    data object LoggedIn : LoginUiState()
+    data class ApiError(val error: String) : LoginUiState()
 }

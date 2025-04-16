@@ -12,7 +12,8 @@ class ProductRepository(
     private val loginRepository: LoginRepository
 ) {
 
-    suspend fun addProduct(addProductRequest: AddProductRequest) = loginRepository.jwtToken?.run {
+    suspend fun addProduct(addProductRequest: AddProductRequest) =
+        loginRepository.getJwtToken()?.run {
         addProductApi.addProduct(addProductRequest, jwtToken = this)
     } ?: AddProductResponse(
         statusCode = HttpStatusCode.Unauthorized.value,

@@ -8,11 +8,10 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
-object AddProductDI {
-    val module = module {
-        viewModelOf(::AddProductViewModel)
-        factoryOf(::AddProductUseCase)
-        factoryOf(::ProductRepository)
-        factoryOf(::AddProductApi)
-    }
+
+val addProductModule = module {
+    viewModelOf(::AddProductViewModel)
+    factoryOf(::AddProductUseCase)
+    factoryOf(::ProductRepository)
+    factoryOf(::AddProductApi)
 }

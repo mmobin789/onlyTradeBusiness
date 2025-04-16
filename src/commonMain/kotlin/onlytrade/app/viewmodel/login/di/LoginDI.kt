@@ -9,14 +9,12 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
-object LoginDI {
 
-    val module = module {
-        viewModelOf(::LoginViewModel)
-        factoryOf(::PhoneLoginUseCase)
-        factoryOf(::EmailLoginUseCase)
-        factoryOf(::LoginRepository)
-        factoryOf(::LoginApi)
-    }
-
+val loginModule = module {
+    viewModelOf(::LoginViewModel)
+    factoryOf(::PhoneLoginUseCase)
+    factoryOf(::EmailLoginUseCase)
+    factoryOf(::LoginRepository)
+    factoryOf(::LoginApi)
 }
+

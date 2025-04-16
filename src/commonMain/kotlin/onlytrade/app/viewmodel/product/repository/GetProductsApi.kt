@@ -13,10 +13,10 @@ class GetProductsApi(private val client: HttpClient) {
     suspend fun getProducts(pageNo: Int, pageSize: Int, userId: Int? = null) = try {
         client.get("https://onlytrade.co/products") {
             parameters {
-                append("pageSize", pageSize.toString())
-                append("pageNo", pageNo.toString())
+                append("size", pageSize.toString())
+                append("page", pageNo.toString())
                 userId?.let { userId ->
-                    append("userId", userId.toString())
+                    append("uid", userId.toString())
                 }
             }
 

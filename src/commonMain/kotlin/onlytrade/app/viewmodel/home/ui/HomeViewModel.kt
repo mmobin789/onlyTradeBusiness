@@ -9,12 +9,28 @@ import onlytrade.app.viewmodel.home.ui.HomeUiState.Idle
 import onlytrade.app.viewmodel.home.ui.HomeUiState.LoadingProducts
 import onlytrade.app.viewmodel.home.ui.HomeUiState.ProductList
 import onlytrade.app.viewmodel.home.usecase.GetProductsUseCase
+import onlytrade.app.viewmodel.login.repository.LoginRepository
 
 
-class HomeViewModel(private val getProductsUseCase: GetProductsUseCase) : ViewModel() {
+class HomeViewModel(
+    private val getProductsUseCase: GetProductsUseCase,
+    private val loginRepository: LoginRepository
+) : ViewModel() {
     private var productsPageNo = 1
+    private var allProductsLoaded = false
     var uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(Idle)
         private set
+
+    val isUserLoggedIn = loginRepository.isUserLoggedIn()
+
+    init {
+        getProducts()
+    }
+
+    fun idle() {
+        uiState.value = Idle
+    }
+
 
     fun getProducts() {
         uiState.value = LoadingProducts
@@ -22,7 +38,8 @@ class HomeViewModel(private val getProductsUseCase: GetProductsUseCase) : ViewMo
             uiState.value = when (val result = getProductsUseCase(pageNo = productsPageNo)) {
                 is GetProductsUseCase.Result.GetProducts -> {
                     ProductList(result.products.apply {
-                        if (isEmpty().not())
+                        allProductsLoaded = isEmpty()
+                        if (allProductsLoaded.not())
                             productsPageNo++
                     })
                 }

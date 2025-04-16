@@ -2,6 +2,7 @@ package onlytrade.app.viewmodel.home.di
 
 import onlytrade.app.viewmodel.home.ui.HomeViewModel
 import onlytrade.app.viewmodel.home.usecase.GetProductsUseCase
+import onlytrade.app.viewmodel.product.repository.GetProductsApi
 import onlytrade.app.viewmodel.product.repository.ProductRepository
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.viewModelOf
@@ -12,5 +13,6 @@ object HomeDI {
         viewModelOf(::HomeViewModel)
         factoryOf(::GetProductsUseCase)
         factoryOf(::ProductRepository)
+        factoryOf(::GetProductsApi)
     }
 }

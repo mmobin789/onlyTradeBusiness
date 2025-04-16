@@ -9,9 +9,13 @@ import onlytrade.app.viewmodel.product.repository.data.db.Product
 class GetProductsUseCase(private val productRepository: ProductRepository) {
     suspend operator fun invoke(pageNo: Int, userId: Int? = null) = withContext(IODispatcher) {
         productRepository.getProducts(pageNo = pageNo, userId = userId).run {
-            if (statusCode == HttpStatusCode.OK.value) // product processing for review.
-                Result.GetProducts(products = products!!) //guaranteed non-null products.
-            else Result.Error(error = error ?: "Something went wrong.")
+            when (statusCode) {
+                HttpStatusCode.OK.value -> Result.GetProducts(products = products!!) //guaranteed non-null products.
+                HttpStatusCode.NotFound.value -> Result.GetProducts(products = emptyList()) // all products loaded.
+                else -> Result.Error(
+                    error = error ?: "Something went wrong."
+                ) // something went wrong would be a rare unhandled/unexpected find.
+            }
         }
     }
 

@@ -12,6 +12,9 @@ import onlytrade.app.viewmodel.login.repository.data.remote.model.request.EmailL
 import onlytrade.app.viewmodel.login.repository.data.remote.model.request.PhoneLoginRequest
 import onlytrade.app.viewmodel.login.repository.data.remote.model.response.LoginResponse
 
+/**
+ * client to the login web services.
+ */
 class LoginApi(private val client: HttpClient) {
 
     suspend fun loginByPhone(phone: String, pwd: String) = try {

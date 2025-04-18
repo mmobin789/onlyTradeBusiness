@@ -8,6 +8,9 @@ import io.ktor.client.request.get
 import io.ktor.http.parameters
 import onlytrade.app.viewmodel.product.repository.data.remote.response.GetProductsResponse
 
+/**
+ * Client to the GetProducts web service.
+ */
 class GetProductsApi(private val client: HttpClient) {
 
     suspend fun getProducts(pageNo: Int, pageSize: Int, userId: Int? = null) = try {

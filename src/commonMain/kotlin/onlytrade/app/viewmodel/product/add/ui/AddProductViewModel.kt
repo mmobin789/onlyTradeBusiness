@@ -35,8 +35,8 @@ class AddProductViewModel(private val addProductUseCase: AddProductUseCase) : Vi
 
     fun addProduct(
         title: String,
-        categoryId: Int,
-        subcategoryId: Int,
+        categoryId: Long,
+        subcategoryId: Long,
         description: String,
         estPrice: String,
         images: List<ByteArray>

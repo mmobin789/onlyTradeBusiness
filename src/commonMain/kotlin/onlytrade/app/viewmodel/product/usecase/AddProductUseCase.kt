@@ -11,7 +11,7 @@ class AddProductUseCase(private val productRepository: ProductRepository) {
     suspend operator fun invoke(
         name: String,
         description: String,
-        subcategoryId: Int,
+        subcategoryId: Long,
         estPrice: Double,
         productImages: List<ByteArray>
     ) =

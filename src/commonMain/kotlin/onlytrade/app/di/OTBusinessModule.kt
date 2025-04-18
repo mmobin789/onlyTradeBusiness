@@ -1,6 +1,8 @@
 package onlytrade.app.di
 
+import DatabaseDriverFactory
 import com.russhwolf.settings.Settings
+import createDatabase
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
@@ -20,39 +22,45 @@ import org.koin.dsl.module
 
 object OTBusinessModule {
     private var diInit = false
-    private val commonModule = module {
-        single {
-            HttpClient {
-                install(HttpTimeout) {
-                    requestTimeoutMillis = 120000  // 120 seconds (increase as needed)
-                    connectTimeoutMillis = 60000   // 60 seconds
-                    socketTimeoutMillis = 120000   // 120 seconds
-                }
-                install(ContentNegotiation) {
-                    json()
-                }
-                install(Logging) {
-                    logger = object : Logger {
-                        override fun log(message: String) {
-                            Napier.d(message = message)
-                        }
 
-                    }
-                    level = LogLevel.ALL
-                }.also {
-                    Napier.base(DebugAntilog())
-                }
-            }
-        }
-        single {
-            Settings() //key-value local storage for kmp based on minimal and default platform impl.
-        }
-    }
 
-    fun run(platformInit: KoinApplication.() -> Unit) {
+    fun run(
+        platformInit: KoinApplication.() -> Unit,
+        databaseDriverFactory: DatabaseDriverFactory
+    ) {
 
         if (diInit)
             return
+
+        val commonModule = module {
+            single {
+                HttpClient {
+                    install(HttpTimeout) {
+                        requestTimeoutMillis = 120000  // 120 seconds (increase as needed)
+                        connectTimeoutMillis = 60000   // 60 seconds
+                        socketTimeoutMillis = 120000   // 120 seconds
+                    }
+                    install(ContentNegotiation) {
+                        json()
+                    }
+                    install(Logging) {
+                        logger = object : Logger {
+                            override fun log(message: String) {
+                                Napier.d(message = message)
+                            }
+
+                        }
+                        level = LogLevel.ALL
+                    }.also {
+                        Napier.base(DebugAntilog())
+                    }
+                }
+            }
+            single {
+                Settings() //key-value local storage for kmp based on minimal and default platform impl.
+            }
+            single { createDatabase(databaseDriverFactory) }
+        }
 
         startKoin {
             platformInit()

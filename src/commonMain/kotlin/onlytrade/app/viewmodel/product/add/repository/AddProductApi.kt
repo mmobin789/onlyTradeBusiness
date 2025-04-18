@@ -15,6 +15,9 @@ import kotlinx.serialization.json.Json
 import onlytrade.app.viewmodel.product.add.repository.data.remote.request.AddProductRequest
 import onlytrade.app.viewmodel.product.add.repository.data.remote.response.AddProductResponse
 
+/**
+ * client to the AddProduct web service.
+ */
 class AddProductApi(private val client: HttpClient) {
 
     suspend fun addProduct(addProductRequest: AddProductRequest, jwtToken: String) =

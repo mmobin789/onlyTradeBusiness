@@ -14,7 +14,7 @@ import onlytrade.app.viewmodel.login.repository.LoginRepository
 
 class HomeViewModel(
     private val getProductsUseCase: GetProductsUseCase,
-    private val loginRepository: LoginRepository
+    loginRepository: LoginRepository
 ) : ViewModel() {
     private var productsPageNo = 1
     private var allProductsLoaded = false

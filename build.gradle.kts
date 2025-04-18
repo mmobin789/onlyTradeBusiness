@@ -6,6 +6,15 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.sqlDelight)
+}
+
+sqldelight {
+    databases {
+        create("OnlyTradeDB") {
+            packageName.set("onlytrade.db")
+        }
+    }
 }
 
 kotlin {
@@ -41,10 +50,11 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.android.driver)
         }
-
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.native.driver)
         }
 
         commonMain.dependencies {

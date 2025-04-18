@@ -15,12 +15,12 @@ VALUES (?, ?,?, ?, ?, ?, ?);
 
 selectPaged:
 SELECT * FROM Product
-ORDER BY id
+ORDER BY id DESC
 LIMIT ? OFFSET ?;
 
 selectUsersPaged:
 SELECT * FROM Product
 WHERE userId = ?
-ORDER BY id
+ORDER BY id DESC
 LIMIT ? OFFSET ?;
 

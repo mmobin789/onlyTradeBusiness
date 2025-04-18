@@ -136,7 +136,7 @@ public class ProductQueries(
             driver.executeQuery(
                 95_527_234, """
     |SELECT Product.id, Product.subcategoryId, Product.name, Product.userId, Product.description, Product.imageUrls, Product.estPrice FROM Product
-    |ORDER BY id
+    |ORDER BY id DESC
     |LIMIT ? OFFSET ?
     """.trimMargin(), mapper, 2
             ) {
@@ -166,7 +166,7 @@ public class ProductQueries(
                 1_042_691_360, """
     |SELECT Product.id, Product.subcategoryId, Product.name, Product.userId, Product.description, Product.imageUrls, Product.estPrice FROM Product
     |WHERE userId = ?
-    |ORDER BY id
+    |ORDER BY id DESC
     |LIMIT ? OFFSET ?
     """.trimMargin(), mapper, 3
             ) {

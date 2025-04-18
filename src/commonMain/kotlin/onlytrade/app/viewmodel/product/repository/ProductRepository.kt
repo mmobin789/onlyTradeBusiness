@@ -27,7 +27,7 @@ class ProductRepository(
 
     suspend fun getProducts(
         pageNo: Int,
-        pageSize: Int = 20,
+        pageSize: Int,
         userId: Int? = null
     ): GetProductsResponse {
 

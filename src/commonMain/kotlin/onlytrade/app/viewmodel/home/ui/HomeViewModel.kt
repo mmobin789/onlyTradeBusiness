@@ -25,8 +25,6 @@ class HomeViewModel(
     var productsPageNo = 1
         private set
 
-    private var allProductsLoaded = false
-
     //val products = mutableListOf<Product>() // scaling list of products.
 
     var uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(Idle)
@@ -63,7 +61,7 @@ class HomeViewModel(
 
                     val productPage = result.products
 
-                    if (productPage.size == productPageSizeExpected && allProductsLoaded.not())
+                    if (productPage.size == productPageSizeExpected)
                         productsPageNo++
 
                     productList.value += productPage
@@ -75,12 +73,12 @@ class HomeViewModel(
 
 
                 GetProductsUseCase.Result.ProductsNotFound -> {
+                    loadedPages.remove(productsPageNo)
                     uiState.value = ProductsNotFound
-                    allProductsLoaded = true
-
                 }
 
                 is GetProductsUseCase.Result.Error -> {
+                    loadedPages.remove(productsPageNo)
                     uiState.value = GetProductsApiError(error = result.error)
                 }
 

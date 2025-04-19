@@ -7,10 +7,10 @@ import kotlinx.coroutines.launch
 import onlytrade.app.viewmodel.home.ui.HomeUiState.GetProductsApiError
 import onlytrade.app.viewmodel.home.ui.HomeUiState.Idle
 import onlytrade.app.viewmodel.home.ui.HomeUiState.LoadingProducts
-import onlytrade.app.viewmodel.home.ui.HomeUiState.ProductList
 import onlytrade.app.viewmodel.home.ui.HomeUiState.ProductsNotFound
 import onlytrade.app.viewmodel.home.usecase.GetProductsUseCase
 import onlytrade.app.viewmodel.login.repository.LoginRepository
+import onlytrade.app.viewmodel.product.repository.data.db.Product
 
 
 class HomeViewModel(
@@ -18,25 +18,25 @@ class HomeViewModel(
     loginRepository: LoginRepository
 ) : ViewModel() {
 
-    val productPageSizeExpected = 20
+    private val loadedPages = hashSetOf<Int>()
 
-    private var productPageSizeActual = 0
-        private set
-
-    val expectedPageLoaded =
-        productPageSizeExpected == productPageSizeActual // this means only 1 page exists.
+    val productPageSizeExpected = 10
 
     var productsPageNo = 1
         private set
+
     private var allProductsLoaded = false
+
+    //val products = mutableListOf<Product>() // scaling list of products.
+
     var uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(Idle)
         private set
 
-    val isUserLoggedIn = loginRepository.isUserLoggedIn()
 
-    init {
-        getProducts()
-    }
+    var productList: MutableStateFlow<List<Product>> = MutableStateFlow(emptyList())
+        private set
+
+    val isUserLoggedIn = loginRepository.isUserLoggedIn()
 
     fun idle() {
         uiState.value = Idle
@@ -44,25 +44,44 @@ class HomeViewModel(
 
 
     fun getProducts() {
-        uiState.value = LoadingProducts
-        viewModelScope.launch {
-            uiState.value = when (val result =
-                getProductsUseCase(pageNo = productsPageNo, pageSize = productPageSizeExpected)) {
-                is GetProductsUseCase.Result.GetProducts -> {
-                    ProductList(result.products.apply {
-                        if (size == productPageSizeExpected && allProductsLoaded.not())
-                            productsPageNo++
+        /**
+         * This checks if the product page requested is already loaded on ui.
+         */
+        if (loadedPages.add(productsPageNo).not()) {
+            return
+        }
 
-                        productPageSizeActual = size
-                    })
+        uiState.value = LoadingProducts
+
+        viewModelScope.launch {
+            when (val result =
+                getProductsUseCase(
+                    pageNo = productsPageNo,
+                    pageSize = productPageSizeExpected
+                )) {
+                is GetProductsUseCase.Result.GetProducts -> {
+
+                    val productPage = result.products
+
+                    if (productPage.size == productPageSizeExpected && allProductsLoaded.not())
+                        productsPageNo++
+
+                    productList.value += productPage
+
+
+                    idle()
+
                 }
 
-                GetProductsUseCase.Result.ProductsNotFound -> ProductsNotFound.apply {
+
+                GetProductsUseCase.Result.ProductsNotFound -> {
+                    uiState.value = ProductsNotFound
                     allProductsLoaded = true
+
                 }
 
                 is GetProductsUseCase.Result.Error -> {
-                    GetProductsApiError(error = result.error)
+                    uiState.value = GetProductsApiError(error = result.error)
                 }
 
             }

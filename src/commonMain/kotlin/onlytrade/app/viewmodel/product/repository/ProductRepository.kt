@@ -1,6 +1,11 @@
 package onlytrade.app.viewmodel.product.repository
 
+import com.russhwolf.settings.Settings
 import io.ktor.http.HttpStatusCode
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.Instant
+import kotlinx.datetime.until
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.add.repository.AddProductApi
 import onlytrade.app.viewmodel.product.add.repository.data.remote.request.AddProductRequest
@@ -13,9 +18,10 @@ class ProductRepository(
     private val addProductApi: AddProductApi,
     private val getProductsApi: GetProductsApi,
     private val loginRepository: LoginRepository,
-    private val onlyTradeDB: OnlyTradeDB
+    private val onlyTradeDB: OnlyTradeDB,
+    private val localPrefs: Settings
 ) {
-
+    private val productLastUpdatedAt = "PRODUCTS_LAST_UPDATED_AT"
 
     suspend fun addProduct(addProductRequest: AddProductRequest) =
         loginRepository.jwtToken()?.run {
@@ -29,7 +35,15 @@ class ProductRepository(
         pageNo: Int,
         pageSize: Int,
         userId: Int? = null
-    ): GetProductsResponse {
+    ) = localPrefs.getStringOrNull(productLastUpdatedAt)?.run {
+        val productUpdateDateTime = Instant.parse(this)
+        val now = Clock.System.now()
+        val minutesDiff = productUpdateDateTime.until(now, DateTimeUnit.MINUTE)
+        val updateRequired = minutesDiff >= 2  // 2 minutes //todo need to update server sync time.
+
+        if (updateRequired) {
+            getProductsApi(pageNo, pageSize, userId)
+        }
 
         val productDao = onlyTradeDB.productQueries
 
@@ -48,13 +62,7 @@ class ProductRepository(
         return GetProductsResponse().run {
             val localProductList = localProducts.executeAsList()
             if (localProductList.isEmpty()) {
-                getProductsApi.getProducts(pageNo, pageSize, userId).also {
-                    it.products?.forEach { product ->
-                        addProduct(product)
-                    }
-                }
-
-
+                getProductsApi(pageNo, pageSize, userId)
             } else {
                 copy(
                     statusCode = HttpStatusCode.OK.value,
@@ -63,9 +71,23 @@ class ProductRepository(
             }
 
         }
-
-
+    } ?: run {
+        getProductsApi(pageNo, pageSize, userId)
     }
+
+
+    private suspend fun getProductsApi(pageNo: Int, pageSize: Int, userId: Int? = null) =
+        getProductsApi.getProducts(pageNo, pageSize, userId).also {
+            it.products?.also {
+                localPrefs.putString(
+                    productLastUpdatedAt,
+                    Clock.System.now().toString()
+                )
+            }?.forEach { product ->
+                addProduct(product)
+            }
+        }
+
 
     /**
      * method to insert product into local db.

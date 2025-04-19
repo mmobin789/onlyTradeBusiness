@@ -10,7 +10,7 @@ CREATE TABLE Product (
 );
 
 insert:
-INSERT INTO Product(id,subcategoryId, name, userId, description, imageUrls, estPrice)
+INSERT OR REPLACE INTO Product(id,subcategoryId, name, userId, description, imageUrls, estPrice)
 VALUES (?, ?,?, ?, ?, ?, ?);
 
 selectPaged:

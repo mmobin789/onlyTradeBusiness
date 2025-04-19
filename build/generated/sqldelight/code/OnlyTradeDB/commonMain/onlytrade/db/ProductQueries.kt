@@ -102,7 +102,7 @@ public class ProductQueries(
     ) {
         driver.execute(
             1_482_150_896, """
-        |INSERT INTO Product(id,subcategoryId, name, userId, description, imageUrls, estPrice)
+        |INSERT OR REPLACE INTO Product(id,subcategoryId, name, userId, description, imageUrls, estPrice)
         |VALUES (?, ?,?, ?, ?, ?, ?)
         """.trimMargin(), 7
         ) {

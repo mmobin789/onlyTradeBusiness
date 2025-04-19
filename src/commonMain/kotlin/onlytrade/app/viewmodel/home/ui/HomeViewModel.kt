@@ -20,6 +20,8 @@ class HomeViewModel(
 
     private val loadedPages = hashSetOf<Int>()
 
+    private var productsNotFound = false
+
     val productPageSizeExpected = 10
 
     var productsPageNo = 1
@@ -41,13 +43,22 @@ class HomeViewModel(
     }
 
 
-    fun getProducts() {
+    fun getProducts(tryAgain: Boolean = false) {
+
+
+        if (tryAgain) {
+            productsNotFound = false
+            removeLoadedPage()
+        }
+
         /**
-         * This checks if the product page requested is already loaded on ui.
+         * This checks if the product page requested is already loaded on ui or if products not found.
          */
-        if (loadedPages.add(productsPageNo).not()) {
+        if (loadedPages.add(productsPageNo).not() || productsNotFound) {
             return
         }
+
+
 
         uiState.value = LoadingProducts
 
@@ -58,6 +69,7 @@ class HomeViewModel(
                     pageSize = productPageSizeExpected
                 )) {
                 is GetProductsUseCase.Result.GetProducts -> {
+                    productsNotFound = false
 
                     val productPage = result.products
 
@@ -73,12 +85,14 @@ class HomeViewModel(
 
 
                 GetProductsUseCase.Result.ProductsNotFound -> {
-                    loadedPages.remove(productsPageNo)
+                    productsNotFound = true
+                    removeLoadedPage()
                     uiState.value = ProductsNotFound
                 }
 
                 is GetProductsUseCase.Result.Error -> {
-                    loadedPages.remove(productsPageNo)
+                    productsNotFound = true
+                    removeLoadedPage()
                     uiState.value = GetProductsApiError(error = result.error)
                 }
 
@@ -86,4 +100,5 @@ class HomeViewModel(
         }
     }
 
+    private fun removeLoadedPage() = loadedPages.remove(productsPageNo)
 }

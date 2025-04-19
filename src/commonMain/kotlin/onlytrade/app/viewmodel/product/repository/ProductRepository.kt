@@ -78,16 +78,31 @@ class ProductRepository(
 
     private suspend fun getProductsApi(pageNo: Int, pageSize: Int, userId: Int? = null) =
         getProductsApi.getProducts(pageNo, pageSize, userId).also {
-            it.products?.also {
+            val products = it.products
+            if (products.isNullOrEmpty()) {
+                deleteProducts()
+            } else {
                 localPrefs.putString(
                     productLastUpdatedAt,
                     Clock.System.now().toString()
                 )
-            }?.forEach { product ->
-                addProduct(product)
+                products.forEach { product ->
+                    addProduct(product)
+                }
             }
         }
 
+    /**
+     * method to delete all products from local db.
+     * Do not call this from main thread.
+     * Blocking synchronous operation.
+     */
+    private fun deleteProducts() {
+        val productDao = onlyTradeDB.productQueries
+        onlyTradeDB.transaction {
+            productDao.deleteAll()
+        }
+    }
 
     /**
      * method to insert product into local db.

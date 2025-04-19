@@ -24,3 +24,5 @@ WHERE userId = ?
 ORDER BY id DESC
 LIMIT ? OFFSET ?;
 
+deleteAll:
+DELETE FROM Product;

@@ -24,8 +24,7 @@ class HomeViewModel(
 
     val productPageSizeExpected = 10
 
-    var productsPageNo = 1
-        private set
+    private var productsPageNo = 1
 
     //val products = mutableListOf<Product>() // scaling list of products.
 

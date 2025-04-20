@@ -4,17 +4,30 @@ import com.russhwolf.settings.Settings
 import kotlinx.serialization.json.Json
 import onlytrade.app.viewmodel.login.repository.data.LoginConst.JWT_TOKEN
 import onlytrade.app.viewmodel.login.repository.data.LoginConst.JWT_USER
+import onlytrade.app.viewmodel.login.repository.data.db.User
 import onlytrade.app.viewmodel.login.repository.data.remote.LoginApi
 import onlytrade.app.viewmodel.login.repository.data.remote.model.response.LoginResponse
 
 class LoginRepository(private val loginApi: LoginApi, private val localPrefs: Settings) {
 
+    /**
+     * returns the authenticated user's JWT if logged in.
+     */
+    fun jwtToken() = localPrefs.getStringOrNull(JWT_TOKEN)
+
+    /**
+     * returns the authenticated user if logged in.
+     */
+    fun user() = localPrefs.getStringOrNull(JWT_USER)?.run {
+        Json.decodeFromString<User>(this)
+    }
+
     suspend fun loginWithPhone(mobileNo: String, pwd: String) =
-        loginApi.loginByPhone(mobileNo, pwd)?.also { it.saveLoginInfo() }
+        loginApi.loginByPhone(mobileNo, pwd).also { it.saveLoginInfo() }
 
 
     suspend fun loginWithEmail(email: String, pwd: String) =
-        loginApi.loginByEmail(email, pwd)?.also { it.saveLoginInfo() }
+        loginApi.loginByEmail(email, pwd).also { it.saveLoginInfo() }
 
     fun isUserLoggedIn() = localPrefs.getStringOrNull(JWT_TOKEN).isNullOrBlank().not()
 

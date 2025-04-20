@@ -11,7 +11,8 @@ class AddProductUseCase(private val productRepository: ProductRepository) {
     suspend operator fun invoke(
         name: String,
         description: String,
-        subcategoryId: Int,
+        categoryId: Long,
+        subcategoryId: Long,
         estPrice: Double,
         productImages: List<ByteArray>
     ) =
@@ -19,21 +20,22 @@ class AddProductUseCase(private val productRepository: ProductRepository) {
             val addProductRequest = AddProductRequest(
                 name = name,
                 description = description,
+                categoryId = categoryId,
                 subcategoryId = subcategoryId,
                 estPrice = estPrice,
                 productImages = productImages
 
             )
-            productRepository.addProduct(addProductRequest = addProductRequest)?.run {
-                if (status == HttpStatusCode.Created.value) // product processing for review.
-                    Result.OK(result = msg)
-                else Result.Error(error = msg)
-            } ?: Result.Error()
+            productRepository.addProduct(addProductRequest = addProductRequest).run {
+                if (statusCode == HttpStatusCode.Created.value) // product processing for review.
+                    Result.OK
+                else Result.Error(error = error ?: "Something went wrong.")
+            }
         }
 
     sealed class Result {
-        data class OK(val result: String) : Result()
-        data class Error(val error: String? = null) : Result()
+        data object OK : Result()
+        data class Error(val error: String) : Result()
     }
 
 }

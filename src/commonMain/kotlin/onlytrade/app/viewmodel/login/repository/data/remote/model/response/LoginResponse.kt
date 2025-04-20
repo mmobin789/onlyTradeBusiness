@@ -4,4 +4,9 @@ import kotlinx.serialization.Serializable
 import onlytrade.app.viewmodel.login.repository.data.db.User
 
 @Serializable
-data class LoginResponse(val status: Int, val jwtToken: String?, val user: User?)
+data class LoginResponse(
+    val statusCode: Int? = null,
+    val jwtToken: String? = null,
+    val user: User? = null,
+    val error: String? = null
+)

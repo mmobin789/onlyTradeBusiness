@@ -48,7 +48,7 @@ class LoginViewModel(
     }
 
 
-    fun doMobileLogin(mobileNo: String, pwd: String) {
+    fun doPhoneLogin(mobileNo: String, pwd: String) {
         viewModelScope.launch {
             uiState.value = if (mobileNo.isBlank() && pwd.isBlank()) {
                 BlankFormError
@@ -68,12 +68,12 @@ class LoginViewModel(
             } else {
                 loading()
 
-                when (phoneLoginUseCase(mobileNo, pwd)) {
-                    is PhoneLoginUseCase.Result.OK -> {
-                        LoginUiState.LoggedIn()
+                when (val result = phoneLoginUseCase(mobileNo, pwd)) {
+                    PhoneLoginUseCase.Result.OK -> {
+                        LoginUiState.LoggedIn
                     }
 
-                    else -> LoginUiState.ApiError()
+                    is PhoneLoginUseCase.Result.Error -> LoginUiState.ApiError(error = result.error)
                 }
             }
         }
@@ -111,9 +111,9 @@ class LoginViewModel(
         loading()
 
         viewModelScope.launch {
-            uiState.value = when (emailLoginUseCase(email, validPwd)) {
-                is EmailLoginUseCase.Result.OK -> LoginUiState.LoggedIn()
-                else -> LoginUiState.ApiError()
+            uiState.value = when (val result = emailLoginUseCase(email, validPwd)) {
+                is EmailLoginUseCase.Result.OK -> LoginUiState.LoggedIn
+                is EmailLoginUseCase.Result.Error -> LoginUiState.ApiError(error = result.error)
             }
         }
     }

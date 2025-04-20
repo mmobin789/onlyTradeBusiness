@@ -1,0 +1,29 @@
+
+CREATE TABLE Product (
+    id INTEGER NOT NULL PRIMARY KEY,
+    categoryId INTEGER NOT NULL,
+    subcategoryId INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    userId INTEGER NOT NULL,
+    description TEXT NOT NULL,
+    imageUrls TEXT NOT NULL,
+    estPrice REAL NOT NULL
+);
+
+insert:
+INSERT OR REPLACE INTO Product(id,categoryId,subcategoryId, name, userId, description, imageUrls, estPrice)
+VALUES (?, ?,?,?, ?, ?, ?, ?);
+
+selectPaged:
+SELECT * FROM Product
+ORDER BY id DESC
+LIMIT ? OFFSET ?;
+
+selectUsersPaged:
+SELECT * FROM Product
+WHERE userId = ?
+ORDER BY id DESC
+LIMIT ? OFFSET ?;
+
+deleteAll:
+DELETE FROM Product;

@@ -114,6 +114,7 @@ class ProductRepository(
         onlyTradeDB.transaction {
             productDao.insert(
                 id = localProduct.id,
+                categoryId = localProduct.categoryId,
                 subcategoryId = localProduct.subcategoryId,
                 userId = localProduct.userId,
                 name = localProduct.name,
@@ -127,6 +128,7 @@ class ProductRepository(
     private fun Product.toLocalProduct() = let { product ->
         onlytrade.db.Product(
             id = product.id,
+            categoryId = product.categoryId,
             subcategoryId = product.subcategoryId,
             userId = product.userId,
             name = product.name,
@@ -139,6 +141,7 @@ class ProductRepository(
     private fun toProduct(localProduct: onlytrade.db.Product) =
         Product(
             id = localProduct.id,
+            categoryId = localProduct.categoryId,
             subcategoryId = localProduct.subcategoryId,
             userId = localProduct.userId,
             name = localProduct.name,

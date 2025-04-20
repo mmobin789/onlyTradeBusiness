@@ -7,6 +7,7 @@ import kotlinx.serialization.Transient
 data class AddProductRequest(
     val name: String,
     val description: String,
+    val categoryId: Long,
     val subcategoryId: Long,
     val estPrice: Double,
     @Transient

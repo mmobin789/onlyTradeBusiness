@@ -4,21 +4,25 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Idle
+import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Loading
+import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Success
+import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Error
 import onlytrade.app.viewmodel.profile.usecase.GetProfileUseCase
 
 class ProfileViewModel (
     private val getProfileUseCase: GetProfileUseCase,
 ) : ViewModel() {
 
-    var uiState: MutableStateFlow<ProfileUiState> = MutableStateFlow(ProfileUiState.Idle)
+    var uiState: MutableStateFlow<ProfileUiState> = MutableStateFlow(Idle)
         private set
 
     fun idle() {
-        uiState.value = ProfileUiState.Idle
+        uiState.value = Idle
     }
 
     private fun loading() {
-        uiState.value = ProfileUiState.Loading
+        uiState.value = Loading
     }
 
     fun getProfile() {
@@ -26,14 +30,14 @@ class ProfileViewModel (
         viewModelScope.launch {
             when (val result = getProfileUseCase()) {
                 is GetProfileUseCase.Result.OK -> {
-                    uiState.value = ProfileUiState.Success(
+                    uiState.value = Success(
                         name = result.name,
                         email = result.email,
                         phone = result.phone
                     )
                 }
                 is GetProfileUseCase.Result.Error -> {
-                    uiState.value = ProfileUiState.Error(error = result.error)
+                    uiState.value = Error(error = result.error)
                 }
             }
         }

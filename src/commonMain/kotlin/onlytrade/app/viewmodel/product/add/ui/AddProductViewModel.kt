@@ -95,6 +95,7 @@ class AddProductViewModel(private val addProductUseCase: AddProductUseCase) : Vi
             uiState.value = when (val result = addProductUseCase(
                 name = title,
                 description = description,
+                categoryId = categoryId,
                 subcategoryId = subcategoryId,
                 estPrice = estPriceD,
                 productImages = images

@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Product(
     val id: Long,
+    val categoryId: Long,
     val subcategoryId: Long,
     val userId: Long,
     val name: String,

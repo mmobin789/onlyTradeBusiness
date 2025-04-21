@@ -15,6 +15,7 @@ import io.ktor.serialization.kotlinx.json.json
 import onlytrade.app.viewmodel.home.di.homeModule
 import onlytrade.app.viewmodel.login.di.loginModule
 import onlytrade.app.viewmodel.product.add.di.addProductModule
+import onlytrade.app.viewmodel.profile.di.profileModule
 import onlytrade.app.viewmodel.splash.di.splashModule
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
@@ -69,7 +70,8 @@ object OTBusinessModule {
                 splashModule,
                 loginModule,
                 homeModule,
-                addProductModule
+                addProductModule,
+                profileModule
             )
             diInit = true
         }

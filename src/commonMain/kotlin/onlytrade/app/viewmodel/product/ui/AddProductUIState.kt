@@ -1,4 +1,4 @@
-package onlytrade.app.viewmodel.product.add.ui
+package onlytrade.app.viewmodel.product.ui
 
 sealed class AddProductUIState {
     data object Idle : AddProductUIState()

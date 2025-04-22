@@ -1,4 +1,4 @@
-package onlytrade.app.viewmodel.product.repository
+package onlytrade.app.viewmodel.product.repository.data.remote.api
 
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
@@ -13,7 +13,7 @@ import onlytrade.app.viewmodel.product.repository.data.remote.response.GetProduc
  */
 class GetProductsApi(private val client: HttpClient) {
 
-    suspend fun getProducts(pageNo: Int, pageSize: Int, userId: Int? = null) = try {
+    suspend fun getProducts(pageNo: Int, pageSize: Int, userId: Long? = null) = try {
         client.get("https://onlytrade.co/products") {
             parameters {
                 append("size", pageSize.toString())

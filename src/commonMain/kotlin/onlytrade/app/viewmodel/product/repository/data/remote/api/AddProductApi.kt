@@ -1,4 +1,4 @@
-package onlytrade.app.viewmodel.product.add.repository
+package onlytrade.app.viewmodel.product.repository.data.remote.api
 
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
@@ -12,8 +12,8 @@ import io.ktor.client.request.setBody
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import kotlinx.serialization.json.Json
-import onlytrade.app.viewmodel.product.add.repository.data.remote.request.AddProductRequest
-import onlytrade.app.viewmodel.product.add.repository.data.remote.response.AddProductResponse
+import onlytrade.app.viewmodel.product.repository.data.remote.request.AddProductRequest
+import onlytrade.app.viewmodel.product.repository.data.remote.response.AddProductResponse
 
 /**
  * client to the AddProduct web service.

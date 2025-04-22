@@ -1,25 +1,26 @@
-package onlytrade.app.viewmodel.home.ui
+package onlytrade.app.viewmodel.product.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import onlytrade.app.viewmodel.home.ui.HomeUiState.GetProductsApiError
-import onlytrade.app.viewmodel.home.ui.HomeUiState.Idle
-import onlytrade.app.viewmodel.home.ui.HomeUiState.LoadingProducts
-import onlytrade.app.viewmodel.home.ui.HomeUiState.ProductsNotFound
 import onlytrade.app.viewmodel.home.usecase.GetProductsUseCase
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.repository.data.db.Product
+import onlytrade.app.viewmodel.product.ui.MyProductsUiState.GetProductsApiError
+import onlytrade.app.viewmodel.product.ui.MyProductsUiState.Idle
+import onlytrade.app.viewmodel.product.ui.MyProductsUiState.LoadingProducts
+import onlytrade.app.viewmodel.product.ui.MyProductsUiState.ProductsNotFound
 
-
-class HomeViewModel(
+class MyProductsViewModel(
     private val getProductsUseCase: GetProductsUseCase,
-    loginRepository: LoginRepository
+    private val loginRepository: LoginRepository
 ) : ViewModel() {
 
-    var uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(Idle)
+
+    var uiState: MutableStateFlow<MyProductsUiState> = MutableStateFlow(Idle)
         private set
+
 
     var productList: MutableStateFlow<List<Product>> = MutableStateFlow(emptyList())
         private set
@@ -31,8 +32,6 @@ class HomeViewModel(
     val productPageSizeExpected = 10
 
     private var productsPageNo = 1
-
-    val isUserLoggedIn = loginRepository.isUserLoggedIn()
 
     /**
      * This would only reset the non-paginated UI state flow.
@@ -66,7 +65,8 @@ class HomeViewModel(
             when (val result =
                 getProductsUseCase(
                     pageNo = productsPageNo,
-                    pageSize = productPageSizeExpected
+                    pageSize = productPageSizeExpected,
+                    userId = loginRepository.user()?.id
                 )) {
                 is GetProductsUseCase.Result.GetProducts -> {
                     productsNotFound = false
@@ -101,4 +101,5 @@ class HomeViewModel(
     }
 
     private fun removeLoadedPage() = loadedPages.remove(productsPageNo)
+
 }

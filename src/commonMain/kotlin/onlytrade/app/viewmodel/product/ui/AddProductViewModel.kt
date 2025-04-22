@@ -1,22 +1,22 @@
-package onlytrade.app.viewmodel.product.add.ui
+package onlytrade.app.viewmodel.product.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.AddProductFailed
-import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.CategoryNotSelected
-import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.DescriptionBlank
-import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.EstPriceBlank
-import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.EstPriceLow
-import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.Idle
-import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.ImagesNotSelected
-import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.LessImagesSelected
-import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.Loading
-import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.MoreImagesSelected
-import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.ProductInReview
-import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.SubcategoryNotSelected
-import onlytrade.app.viewmodel.product.add.ui.AddProductUIState.TitleBlank
+import onlytrade.app.viewmodel.product.ui.AddProductUIState.AddProductFailed
+import onlytrade.app.viewmodel.product.ui.AddProductUIState.CategoryNotSelected
+import onlytrade.app.viewmodel.product.ui.AddProductUIState.DescriptionBlank
+import onlytrade.app.viewmodel.product.ui.AddProductUIState.EstPriceBlank
+import onlytrade.app.viewmodel.product.ui.AddProductUIState.EstPriceLow
+import onlytrade.app.viewmodel.product.ui.AddProductUIState.Idle
+import onlytrade.app.viewmodel.product.ui.AddProductUIState.ImagesNotSelected
+import onlytrade.app.viewmodel.product.ui.AddProductUIState.LessImagesSelected
+import onlytrade.app.viewmodel.product.ui.AddProductUIState.Loading
+import onlytrade.app.viewmodel.product.ui.AddProductUIState.MoreImagesSelected
+import onlytrade.app.viewmodel.product.ui.AddProductUIState.ProductInReview
+import onlytrade.app.viewmodel.product.ui.AddProductUIState.SubcategoryNotSelected
+import onlytrade.app.viewmodel.product.ui.AddProductUIState.TitleBlank
 import onlytrade.app.viewmodel.product.usecase.AddProductUseCase
 import onlytrade.app.viewmodel.product.usecase.AddProductUseCase.Result
 

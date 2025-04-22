@@ -3,8 +3,8 @@ package onlytrade.app.viewmodel.product.usecase
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.withContext
 import onlytrade.app.IODispatcher
-import onlytrade.app.viewmodel.product.add.repository.data.remote.request.AddProductRequest
 import onlytrade.app.viewmodel.product.repository.ProductRepository
+import onlytrade.app.viewmodel.product.repository.data.remote.request.AddProductRequest
 
 class AddProductUseCase(private val productRepository: ProductRepository) {
 

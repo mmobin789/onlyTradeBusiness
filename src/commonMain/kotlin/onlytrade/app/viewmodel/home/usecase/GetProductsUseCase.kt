@@ -7,7 +7,7 @@ import onlytrade.app.viewmodel.product.repository.ProductRepository
 import onlytrade.app.viewmodel.product.repository.data.db.Product
 
 class GetProductsUseCase(private val productRepository: ProductRepository) {
-    suspend operator fun invoke(pageNo: Int, pageSize: Int, userId: Int? = null) =
+    suspend operator fun invoke(pageNo: Int, pageSize: Int, userId: Long? = null) =
         withContext(IODispatcher) {
             productRepository.getProducts(pageNo = pageNo, pageSize = pageSize, userId = userId)
                 .run {

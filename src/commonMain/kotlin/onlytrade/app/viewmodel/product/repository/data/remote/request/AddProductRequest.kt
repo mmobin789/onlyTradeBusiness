@@ -1,4 +1,4 @@
-package onlytrade.app.viewmodel.product.add.repository.data.remote.request
+package onlytrade.app.viewmodel.product.repository.data.remote.request
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient

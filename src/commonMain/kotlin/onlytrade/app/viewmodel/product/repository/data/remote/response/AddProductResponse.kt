@@ -1,4 +1,4 @@
-package onlytrade.app.viewmodel.product.add.repository.data.remote.response
+package onlytrade.app.viewmodel.product.repository.data.remote.response
 
 import kotlinx.serialization.Serializable
 

@@ -7,10 +7,11 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.Instant
 import kotlinx.datetime.until
 import onlytrade.app.viewmodel.login.repository.LoginRepository
-import onlytrade.app.viewmodel.product.add.repository.AddProductApi
-import onlytrade.app.viewmodel.product.add.repository.data.remote.request.AddProductRequest
-import onlytrade.app.viewmodel.product.add.repository.data.remote.response.AddProductResponse
 import onlytrade.app.viewmodel.product.repository.data.db.Product
+import onlytrade.app.viewmodel.product.repository.data.remote.api.AddProductApi
+import onlytrade.app.viewmodel.product.repository.data.remote.api.GetProductsApi
+import onlytrade.app.viewmodel.product.repository.data.remote.request.AddProductRequest
+import onlytrade.app.viewmodel.product.repository.data.remote.response.AddProductResponse
 import onlytrade.app.viewmodel.product.repository.data.remote.response.GetProductsResponse
 import onlytrade.db.OnlyTradeDB
 
@@ -34,7 +35,7 @@ class ProductRepository(
     suspend fun getProducts(
         pageNo: Int,
         pageSize: Int,
-        userId: Int? = null
+        userId: Long? = null
     ) = localPrefs.getStringOrNull(productLastUpdatedAt)?.run {
         val productUpdateDateTime = Instant.parse(this)
         val now = Clock.System.now()
@@ -76,7 +77,7 @@ class ProductRepository(
     }
 
 
-    private suspend fun getProductsApi(pageNo: Int, pageSize: Int, userId: Int? = null) =
+    private suspend fun getProductsApi(pageNo: Int, pageSize: Int, userId: Long? = null) =
         getProductsApi.getProducts(pageNo, pageSize, userId).also {
             val products = it.products
             if (products.isNullOrEmpty()) {

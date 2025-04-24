@@ -11,12 +11,12 @@ import onlytrade.app.viewmodel.login.repository.data.remote.model.response.Login
 class LoginRepository(private val loginApi: LoginApi, private val localPrefs: Settings) {
 
     /**
-     * returns the authenticated user's JWT if logged in.
+     * Returns the authenticated user's JWT if logged in.
      */
     fun jwtToken() = localPrefs.getStringOrNull(JWT_TOKEN)
 
     /**
-     * returns the authenticated user if logged in.
+     * Returns the authenticated user if logged in.
      */
     fun user() = localPrefs.getStringOrNull(JWT_USER)?.run {
         Json.decodeFromString<User>(this)

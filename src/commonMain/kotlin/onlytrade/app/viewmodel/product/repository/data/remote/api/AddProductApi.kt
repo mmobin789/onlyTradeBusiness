@@ -34,10 +34,10 @@ class AddProductApi(private val client: HttpClient) {
                         Headers.build {
                             append(HttpHeaders.ContentType, "application/json")
                         })
-                    addProductRequest.productImages!!.forEach {
+                    addProductRequest.productImages!!.forEachIndexed { index, byteArray ->
                         //product Images are guaranteed to be non null here.
-                        val key = "productImage${it + 1}"
-                        append(key, it, Headers.build {
+                        val key = "productImage${index + 1}"
+                        append(key, byteArray, Headers.build {
                             append(
                                 HttpHeaders.ContentType,
                                 "image/jpeg"

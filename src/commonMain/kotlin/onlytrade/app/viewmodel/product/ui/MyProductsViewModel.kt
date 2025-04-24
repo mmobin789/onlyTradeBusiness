@@ -7,10 +7,11 @@ import kotlinx.coroutines.launch
 import onlytrade.app.viewmodel.home.ui.usecase.GetProductsUseCase
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.repository.data.db.Product
-import onlytrade.app.viewmodel.product.ui.MyProductsUiState.GetProductsApiError
-import onlytrade.app.viewmodel.product.ui.MyProductsUiState.Idle
-import onlytrade.app.viewmodel.product.ui.MyProductsUiState.LoadingProducts
-import onlytrade.app.viewmodel.product.ui.MyProductsUiState.ProductsNotFound
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.GetProductsApiError
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.Idle
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.LoadingProducts
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.ProductsNotFound
 
 class MyProductsViewModel(
     private val getProductsUseCase: GetProductsUseCase,

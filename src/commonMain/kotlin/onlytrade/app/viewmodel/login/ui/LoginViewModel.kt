@@ -13,8 +13,8 @@ import onlytrade.app.viewmodel.login.ui.LoginUiState.Idle
 import onlytrade.app.viewmodel.login.ui.LoginUiState.Loading
 import onlytrade.app.viewmodel.login.ui.LoginUiState.MobileNoFormatInputError
 import onlytrade.app.viewmodel.login.ui.LoginUiState.SmallPwdInputError
-import onlytrade.app.viewmodel.login.usecase.EmailLoginUseCase
-import onlytrade.app.viewmodel.login.usecase.PhoneLoginUseCase
+import onlytrade.app.viewmodel.login.ui.usecase.EmailLoginUseCase
+import onlytrade.app.viewmodel.login.ui.usecase.PhoneLoginUseCase
 
 class LoginViewModel(
     private val phoneLoginUseCase: PhoneLoginUseCase,

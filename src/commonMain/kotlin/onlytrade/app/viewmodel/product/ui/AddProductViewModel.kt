@@ -17,8 +17,8 @@ import onlytrade.app.viewmodel.product.ui.AddProductUIState.MoreImagesSelected
 import onlytrade.app.viewmodel.product.ui.AddProductUIState.ProductInReview
 import onlytrade.app.viewmodel.product.ui.AddProductUIState.SubcategoryNotSelected
 import onlytrade.app.viewmodel.product.ui.AddProductUIState.TitleBlank
-import onlytrade.app.viewmodel.product.usecase.AddProductUseCase
-import onlytrade.app.viewmodel.product.usecase.AddProductUseCase.Result
+import onlytrade.app.viewmodel.product.ui.usecase.AddProductUseCase
+import onlytrade.app.viewmodel.product.ui.usecase.AddProductUseCase.Result
 
 class AddProductViewModel(private val addProductUseCase: AddProductUseCase) : ViewModel() {
     var uiState: MutableStateFlow<AddProductUIState> = MutableStateFlow(Idle)

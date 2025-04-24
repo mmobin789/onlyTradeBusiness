@@ -8,7 +8,7 @@ import onlytrade.app.viewmodel.home.ui.HomeUiState.GetProductsApiError
 import onlytrade.app.viewmodel.home.ui.HomeUiState.Idle
 import onlytrade.app.viewmodel.home.ui.HomeUiState.LoadingProducts
 import onlytrade.app.viewmodel.home.ui.HomeUiState.ProductsNotFound
-import onlytrade.app.viewmodel.home.usecase.GetProductsUseCase
+import onlytrade.app.viewmodel.home.ui.usecase.GetProductsUseCase
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.repository.data.db.Product
 

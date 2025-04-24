@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import onlytrade.app.viewmodel.home.usecase.GetProductsUseCase
+import onlytrade.app.viewmodel.home.ui.usecase.GetProductsUseCase
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.repository.data.db.Product
 import onlytrade.app.viewmodel.product.ui.MyProductsUiState.GetProductsApiError

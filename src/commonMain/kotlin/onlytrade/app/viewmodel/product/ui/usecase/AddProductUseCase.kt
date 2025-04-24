@@ -1,4 +1,4 @@
-package onlytrade.app.viewmodel.product.usecase
+package onlytrade.app.viewmodel.product.ui.usecase
 
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.withContext

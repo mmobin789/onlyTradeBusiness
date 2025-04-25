@@ -16,6 +16,7 @@ import onlytrade.app.viewmodel.home.di.homeModule
 import onlytrade.app.viewmodel.login.di.loginModule
 import onlytrade.app.viewmodel.product.di.addProductModule
 import onlytrade.app.viewmodel.product.di.myProductsModule
+import onlytrade.app.viewmodel.product.di.productDetailModule
 import onlytrade.app.viewmodel.profile.di.profileModule
 import onlytrade.app.viewmodel.splash.di.splashModule
 import org.koin.core.KoinApplication
@@ -73,6 +74,7 @@ object OTBusinessModule {
                 homeModule,
                 addProductModule,
                 myProductsModule,
+                productDetailModule,
                 profileModule
             )
             diInit = true

@@ -24,6 +24,8 @@ class ProductRepository(
 ) {
     private val productLastUpdatedAt = "PRODUCTS_LAST_UPDATED_AT"
 
+    private val dao = onlyTradeDB.productQueries
+
     suspend fun addProduct(addProductRequest: AddProductRequest) =
         loginRepository.jwtToken()?.run {
             addProductApi.addProduct(addProductRequest, jwtToken = this)
@@ -31,6 +33,12 @@ class ProductRepository(
             statusCode = HttpStatusCode.Unauthorized.value,
             error = HttpStatusCode.Unauthorized.description
         )
+
+    fun getProduct(productId: Long) = onlyTradeDB.transactionWithResult {
+        val localProduct = dao.getById(productId).executeAsOne()
+        toProduct(localProduct)
+    }
+
 
     suspend fun getProducts(
         pageNo: Int,
@@ -46,19 +54,17 @@ class ProductRepository(
             getProductsApi(pageNo, pageSize, userId)
         }
 
-        val productDao = onlyTradeDB.productQueries
-
         val offset = if (pageNo > 1) {    // 2..20..3..40..4..60
             ((pageSize * pageNo) - pageSize).toLong()
         } else 0
 
-        val localProducts = if (userId != null) productDao.selectUsersPaged(
+        val localProducts = if (userId != null) dao.selectUsersPaged(
             userId.toLong(),
             pageSize.toLong(),
             offset
         )
         else
-            productDao.selectPaged(pageSize.toLong(), offset)
+            dao.selectPaged(pageSize.toLong(), offset)
 
         return GetProductsResponse().run {
             val localProductList = localProducts.executeAsList()
@@ -99,9 +105,8 @@ class ProductRepository(
      * Blocking synchronous operation.
      */
     private fun deleteProducts() {
-        val productDao = onlyTradeDB.productQueries
         onlyTradeDB.transaction {
-            productDao.deleteAll()
+            dao.deleteAll()
         }
     }
 

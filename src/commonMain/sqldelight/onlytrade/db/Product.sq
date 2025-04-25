@@ -14,6 +14,11 @@ insert:
 INSERT OR REPLACE INTO Product(id,categoryId,subcategoryId, name, userId, description, imageUrls, estPrice)
 VALUES (?, ?,?,?, ?, ?, ?, ?);
 
+
+getById:
+SELECT * FROM Product
+WHERE id = ?;
+
 selectPaged:
 SELECT * FROM Product
 ORDER BY id DESC

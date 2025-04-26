@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class Offer(
     val id: Long,
     val userId: Long,
-    val productId: Long,
+    val productIds: List<Long>,
     val price: Double,
     val approved: Boolean
 )

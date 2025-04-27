@@ -18,6 +18,7 @@ class MyProductsViewModel(
     private val loginRepository: LoginRepository
 ) : ViewModel() {
 
+    val pickedProductIds = hashSetOf<Long>()
 
     var uiState: MutableStateFlow<MyProductsUiState> = MutableStateFlow(Idle)
         private set
@@ -102,5 +103,13 @@ class MyProductsViewModel(
     }
 
     private fun removeLoadedPage() = loadedPages.remove(productsPageNo)
+
+    fun selectProduct(id: Long): Boolean {
+        if (pickedProductIds.add(id).not()) {
+            pickedProductIds.remove(id)
+            return false
+        }
+        return true
+    }
 
 }

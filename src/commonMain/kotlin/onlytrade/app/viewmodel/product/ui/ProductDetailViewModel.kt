@@ -21,6 +21,7 @@ class ProductDetailViewModel(
     var uiState: MutableStateFlow<ProductDetailUiState> = MutableStateFlow(Idle)
         private set
 
+    //todo call this.
     fun getProductDetail(productId: Long) {
         uiState.value = LoadingDetail
         viewModelScope.launch {

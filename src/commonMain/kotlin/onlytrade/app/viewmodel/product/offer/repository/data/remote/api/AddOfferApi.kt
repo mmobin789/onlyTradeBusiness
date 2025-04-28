@@ -1,4 +1,4 @@
-package onlytrade.app.viewmodel.offer.repository.data.remote.api
+package onlytrade.app.viewmodel.product.offer.repository.data.remote.api
 
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
@@ -10,9 +10,12 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
-import onlytrade.app.viewmodel.offer.repository.data.remote.request.AddOfferRequest
-import onlytrade.app.viewmodel.offer.repository.data.remote.response.AddOfferResponse
+import onlytrade.app.viewmodel.product.offer.repository.data.remote.request.AddOfferRequest
+import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.AddOfferResponse
 
+/**
+ * client to the AddOffer web service.
+ */
 class AddOfferApi(private val client: HttpClient) {
     suspend fun addOffer(addOfferRequest: AddOfferRequest, jwtToken: String) = try {
         val httpResponse = client.post("https://onlytrade.co/offer/add") {

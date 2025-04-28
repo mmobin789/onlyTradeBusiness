@@ -26,10 +26,10 @@ class ProductDetailViewModel(
 
     private var productUserId = 0L
 
-    fun makeOffer(offerReceiverId: Long, productIds: List<Long>) {
+    fun makeOffer(productIds: HashSet<Long>) {
         uiState.value = MakingOffer
         viewModelScope.launch {
-            uiState.value = when (offerUseCase(offerReceiverId, productIds)) {
+            uiState.value = when (offerUseCase(offerReceiverId = productUserId, productIds)) {
                 is OfferUseCase.Result.Error -> MakeOfferFail
                 OfferUseCase.Result.OfferMade -> OfferMade
             }

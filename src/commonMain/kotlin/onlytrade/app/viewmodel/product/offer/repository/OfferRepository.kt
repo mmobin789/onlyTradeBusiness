@@ -14,7 +14,7 @@ class OfferRepository(
     private val onlyTradeDB: OnlyTradeDB //todo when impl getOffers.
 ) {
 
-    suspend fun addOffer(offerReceiverId: Long, productIds: List<Long>) =
+    suspend fun addOffer(offerReceiverId: Long, productIds: HashSet<Long>) =
         loginRepository.jwtToken()?.run {
             val addOfferRequest = AddOfferRequest(
                 offer = Offer(

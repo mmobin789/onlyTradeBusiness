@@ -6,7 +6,7 @@ import onlytrade.app.IODispatcher
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
 
 class OfferUseCase(private val offerRepository: OfferRepository) {
-    suspend operator fun invoke(offerReceiverId: Long, productIds: List<Long>) =
+    suspend operator fun invoke(offerReceiverId: Long, productIds: HashSet<Long>) =
         withContext(IODispatcher) {
             offerRepository.addOffer(offerReceiverId, productIds).run {
                 if (statusCode == HttpStatusCode.Created.value) // offer made.

@@ -7,7 +7,8 @@ data class Offer(
     val id: Long,
     val offerMakerId: Long,
     val offerReceiverId: Long,
-    val productIds: Set<Long>,
-    val price: Double,
+    val offerReceiverProductId: Long,
+    val offeredProductIds: Set<Long>,
+    val extraPrice: Double,
     val approved: Boolean
 )

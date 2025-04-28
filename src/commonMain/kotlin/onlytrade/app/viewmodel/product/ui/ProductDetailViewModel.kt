@@ -25,11 +25,20 @@ class ProductDetailViewModel(
         private set
 
     private var productUserId = 0L
+    private var productId = 0L
 
-    fun makeOffer(productIds: HashSet<Long>) {
+    fun idle() {
+        uiState.value = Idle
+    }
+
+    fun makeOffer(offeredProductIds: HashSet<Long>) {
         uiState.value = MakingOffer
         viewModelScope.launch {
-            uiState.value = when (offerUseCase(offerReceiverId = productUserId, productIds)) {
+            uiState.value = when (offerUseCase(
+                offerReceiverId = productUserId,
+                offerReceiverProductId = productId,
+                offeredProductIds = offeredProductIds,
+            )) {
                 is OfferUseCase.Result.Error -> MakeOfferFail
                 OfferUseCase.Result.OfferMade -> OfferMade
             }
@@ -37,6 +46,7 @@ class ProductDetailViewModel(
     }
 
     fun getProductDetail(productId: Long) {
+        this.productId = productId
         uiState.value = LoadingDetail
         viewModelScope.launch {
             val product = getProductDetailUseCase(productId)

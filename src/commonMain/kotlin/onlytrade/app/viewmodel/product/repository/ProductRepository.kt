@@ -67,7 +67,8 @@ class ProductRepository(
             dao.selectPaged(pageSize.toLong(), offset)
 
         return GetProductsResponse().run {
-            val localProductList = localProducts.executeAsList()
+            val localProductList =
+                onlyTradeDB.transactionWithResult { localProducts.executeAsList() }
             if (localProductList.isEmpty()) {
                 getProductsApi(pageNo, pageSize, userId)
             } else {

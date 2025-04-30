@@ -35,7 +35,7 @@ class LoginRepository(private val loginApi: LoginApi, private val localPrefs: Se
     suspend fun loginWithEmail(email: String, pwd: String) =
         loginApi.loginByEmail(email, pwd).also { it.saveLoginInfo() }
 
-    fun isUserLoggedIn() = localPrefs.getStringOrNull(JWT_TOKEN).isNullOrBlank().not()
+    fun isUserLoggedIn() = jwtToken().isNullOrBlank().not()
 
 
     private fun LoginResponse.saveLoginInfo() {

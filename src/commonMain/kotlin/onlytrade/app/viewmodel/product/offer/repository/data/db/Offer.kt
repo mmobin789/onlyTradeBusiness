@@ -10,5 +10,6 @@ data class Offer(
     val offerReceiverProductId: Long,
     val offeredProductIds: Set<Long>,
     val extraPrice: Double,
-    val approved: Boolean
+    val accepted: Boolean,
+    val completed: Boolean
 )

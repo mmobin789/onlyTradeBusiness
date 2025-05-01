@@ -1,0 +1,36 @@
+import kotlin.Boolean;
+
+CREATE TABLE Offer (
+    id INTEGER NOT NULL PRIMARY KEY,
+    offerMakerId INTEGER NOT NULL,
+    offerReceiverId INTEGER NOT NULL,
+    offerReceiverProductId INTEGER NOT NULL,
+    offeredProductIds TEXT NOT NULL,
+    extraPrice REAL NOT NULL,
+    accepted INTEGER AS Boolean NOT NULL,
+    completed INTEGER AS Boolean NOT NULL
+);
+
+add:
+INSERT OR REPLACE INTO Offer(id,offerMakerId,offerReceiverId, offerReceiverProductId, offeredProductIds,extraPrice,accepted,completed)
+VALUES (?, ?,?,?,? ,?,?,?);
+
+
+getOffersByProductId:
+SELECT * FROM Offer
+WHERE offerReceiverProductId = ?;
+
+getOffersMade:
+SELECT * FROM Offer
+WHERE offerMakerId = ?
+ORDER BY id DESC
+LIMIT ? OFFSET ?;
+
+getOffersReceived:
+SELECT * FROM Offer
+WHERE offerReceiverId = ?
+ORDER BY id DESC
+LIMIT ? OFFSET ?;
+
+deleteAll:
+DELETE FROM Offer;

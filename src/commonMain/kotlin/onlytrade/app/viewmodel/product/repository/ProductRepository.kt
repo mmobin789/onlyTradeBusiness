@@ -7,6 +7,7 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.Instant
 import kotlinx.datetime.until
 import onlytrade.app.viewmodel.login.repository.LoginRepository
+import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
 import onlytrade.app.viewmodel.product.repository.data.db.Product
 import onlytrade.app.viewmodel.product.repository.data.remote.api.AddProductApi
 import onlytrade.app.viewmodel.product.repository.data.remote.api.GetProductsApi
@@ -16,11 +17,12 @@ import onlytrade.app.viewmodel.product.repository.data.remote.response.GetProduc
 import onlytrade.db.OnlyTradeDB
 
 class ProductRepository(
+    private val loginRepository: LoginRepository,
     private val addProductApi: AddProductApi,
     private val getProductsApi: GetProductsApi,
-    private val loginRepository: LoginRepository,
-    private val onlyTradeDB: OnlyTradeDB,
-    private val localPrefs: Settings
+    private val offerRepository: OfferRepository,
+    private val localPrefs: Settings,
+    onlyTradeDB: OnlyTradeDB
 ) {
     private val productLastUpdatedAt = "PRODUCTS_LAST_UPDATED_AT"
 
@@ -34,7 +36,7 @@ class ProductRepository(
             error = HttpStatusCode.Unauthorized.description
         )
 
-    fun getProduct(productId: Long) = onlyTradeDB.transactionWithResult {
+    fun getProduct(productId: Long) = dao.transactionWithResult {
         val localProduct = dao.getById(productId).executeAsOne()
         toProduct(localProduct)
     }
@@ -68,7 +70,7 @@ class ProductRepository(
 
         return GetProductsResponse().run {
             val localProductList =
-                onlyTradeDB.transactionWithResult { localProducts.executeAsList() }
+                dao.transactionWithResult { localProducts.executeAsList() }
             if (localProductList.isEmpty()) {
                 getProductsApi(pageNo, pageSize, userId)
             } else {
@@ -96,6 +98,9 @@ class ProductRepository(
                 )
                 products.forEach { product ->
                     addProduct(product)
+                    product.offers?.forEach { offer ->
+                        offerRepository.addOffer(offer)
+                    }
                 }
             }
         }
@@ -106,7 +111,7 @@ class ProductRepository(
      * Blocking synchronous operation.
      */
     private fun deleteProducts() {
-        onlyTradeDB.transaction {
+        dao.transaction {
             dao.deleteAll()
         }
     }
@@ -115,35 +120,33 @@ class ProductRepository(
      * method to insert product into local db.
      * DO NOT call this from main thread.
      */
-    private fun addProduct(product: Product) {
-        val productDao = onlyTradeDB.productQueries
-        val localProduct = product.toLocalProduct()
-        onlyTradeDB.transaction {
-            productDao.insert(
-                id = localProduct.id,
-                categoryId = localProduct.categoryId,
-                subcategoryId = localProduct.subcategoryId,
-                userId = localProduct.userId,
-                name = localProduct.name,
-                description = localProduct.description,
-                estPrice = localProduct.estPrice,
-                imageUrls = localProduct.imageUrls
+    private fun addProduct(product: Product) = dao.transaction {
+        product.run {
+            dao.insert(
+                id = id,
+                categoryId = categoryId,
+                subcategoryId = subcategoryId,
+                userId = userId,
+                name = name,
+                description = description,
+                estPrice = estPrice,
+                imageUrls = imageUrls.joinToString(",")
             )
         }
     }
 
-    private fun Product.toLocalProduct() = let { product ->
-        onlytrade.db.Product(
-            id = product.id,
-            categoryId = product.categoryId,
-            subcategoryId = product.subcategoryId,
-            userId = product.userId,
-            name = product.name,
-            description = product.description,
-            estPrice = product.estPrice,
-            imageUrls = product.imageUrls.joinToString(",")
-        )
-    }
+    /*    private fun Product.toLocalProduct() = let { product ->
+            onlytrade.db.Product(
+                id = product.id,
+                categoryId = product.categoryId,
+                subcategoryId = product.subcategoryId,
+                userId = product.userId,
+                name = product.name,
+                description = product.description,
+                estPrice = product.estPrice,
+                imageUrls = product.imageUrls.joinToString(",")
+            )
+        }*/
 
     private fun toProduct(localProduct: onlytrade.db.Product) =
         Product(
@@ -154,6 +157,7 @@ class ProductRepository(
             name = localProduct.name,
             description = localProduct.description,
             estPrice = localProduct.estPrice,
-            imageUrls = localProduct.imageUrls.split(",")
+            imageUrls = localProduct.imageUrls.split(","),
+            offers = offerRepository.getOffersByProductId(localProduct.id)
         )
 }

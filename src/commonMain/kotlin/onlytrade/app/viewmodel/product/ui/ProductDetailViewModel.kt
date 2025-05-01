@@ -20,6 +20,7 @@ class ProductDetailViewModel(
     var uiState: MutableStateFlow<ProductDetailUiState> = MutableStateFlow(Idle)
         private set
 
+    private val user = loginRepository.user()
 
     fun idle() {
         uiState.value = Idle
@@ -41,10 +42,14 @@ class ProductDetailViewModel(
 
     fun isUserLoggedIn() = loginRepository.isUserLoggedIn()
 
+    fun gotAnOffer(offerReceiverId: Long) = user?.id == offerReceiverId
+
+    fun hasMyOffer(offerMakerId: Long) = user?.id == offerMakerId
+
     /**
      * Each product has it's user's id.
      * If product's user id is same as logged in user's id,then it's logged in user's product.
      */
-    fun isMyProduct(productUserId: Long) = loginRepository.user()?.id == productUserId
+    fun isMyProduct(productUserId: Long) = user?.id == productUserId
 
 }

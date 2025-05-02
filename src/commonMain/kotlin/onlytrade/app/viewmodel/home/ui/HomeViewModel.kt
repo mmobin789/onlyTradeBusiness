@@ -43,13 +43,7 @@ class HomeViewModel(
     }
 
 
-    fun getProducts(tryAgain: Boolean = false) {
-
-
-        if (tryAgain) {
-            productsNotFound = false
-            removeLoadedPage()
-        }
+    fun getProducts() {
 
         /**
          * This checks if the product page requested is already loaded on ui or if products not found.

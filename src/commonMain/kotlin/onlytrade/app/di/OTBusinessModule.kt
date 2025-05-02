@@ -12,6 +12,7 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
+import onlytrade.app.AppConfig
 import onlytrade.app.viewmodel.home.di.homeModule
 import onlytrade.app.viewmodel.login.di.loginModule
 import onlytrade.app.viewmodel.product.di.addProductModule
@@ -36,6 +37,10 @@ object OTBusinessModule {
             return
 
         val commonModule = module {
+
+            single {
+                AppConfig
+            }
             single {
                 HttpClient {
                     install(HttpTimeout) {

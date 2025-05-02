@@ -7,15 +7,15 @@ import io.ktor.client.plugins.ResponseException
 import io.ktor.client.request.get
 import io.ktor.http.URLBuilder
 import io.ktor.http.parameters
+import onlytrade.app.AppConfig
 import onlytrade.app.viewmodel.product.repository.data.remote.response.GetProductsResponse
 
 /**
  * Client to the GetProducts web service.
  */
-class GetProductsApi(private val client: HttpClient) {
-
+class GetProductsApi(private val appConfig: AppConfig, private val client: HttpClient) {
     suspend fun getProducts(pageNo: Int, pageSize: Int, userId: Long? = null) = try {
-        val url = URLBuilder("https://onlytrade.co/products").apply {
+        val url = URLBuilder("${appConfig.baseUrl}/products").apply {
             parameters.append("size", pageSize.toString())
             parameters.append("page", pageNo.toString())
             userId?.let { parameters.append("uid", it.toString()) }

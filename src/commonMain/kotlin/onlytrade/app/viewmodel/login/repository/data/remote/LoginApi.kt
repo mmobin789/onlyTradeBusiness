@@ -8,6 +8,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import onlytrade.app.AppConfig
 import onlytrade.app.viewmodel.login.repository.data.remote.model.request.EmailLoginRequest
 import onlytrade.app.viewmodel.login.repository.data.remote.model.request.PhoneLoginRequest
 import onlytrade.app.viewmodel.login.repository.data.remote.model.response.LoginResponse
@@ -15,10 +16,12 @@ import onlytrade.app.viewmodel.login.repository.data.remote.model.response.Login
 /**
  * client to the login web services.
  */
-class LoginApi(private val client: HttpClient) {
+class LoginApi(appConfig: AppConfig, private val client: HttpClient) {
+
+    private val baseUrl = appConfig.baseUrl
 
     suspend fun loginByPhone(phone: String, pwd: String) = try {
-        val httpResponse = client.post("https://onlytrade.co/login/phone") {
+        val httpResponse = client.post("$baseUrl/login/phone") {
             contentType(ContentType.Application.Json)
             setBody(PhoneLoginRequest(phone, pwd))
         }
@@ -31,7 +34,7 @@ class LoginApi(private val client: HttpClient) {
     }
 
     suspend fun loginByEmail(email: String, pwd: String) = try {
-        val httpResponse = client.post("https://onlytrade.co/login/email") {
+        val httpResponse = client.post("$baseUrl/login/email") {
             contentType(ContentType.Application.Json)
             setBody(EmailLoginRequest(email, pwd))
         }

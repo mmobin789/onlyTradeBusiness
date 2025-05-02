@@ -10,15 +10,16 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
+import onlytrade.app.AppConfig
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.request.AddOfferRequest
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.AddOfferResponse
 
 /**
  * client to the AddOffer web service.
  */
-class AddOfferApi(private val client: HttpClient) {
+class AddOfferApi(private val appConfig: AppConfig, private val client: HttpClient) {
     suspend fun addOffer(addOfferRequest: AddOfferRequest, jwtToken: String) = try {
-        val httpResponse = client.post("https://onlytrade.co/offer/add") {
+        val httpResponse = client.post("${appConfig.baseUrl}/offer/add") {
             header(
                 HttpHeaders.Authorization,
                 "Bearer $jwtToken"

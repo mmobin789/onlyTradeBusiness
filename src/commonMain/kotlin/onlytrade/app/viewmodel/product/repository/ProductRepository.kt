@@ -158,6 +158,6 @@ class ProductRepository(
             description = localProduct.description,
             estPrice = localProduct.estPrice,
             imageUrls = localProduct.imageUrls.split(","),
-            offers = offerRepository.getOffersByProductId(localProduct.id)
+            offers = offerRepository.getOffersByProductId(localProduct.id).ifEmpty { null }
         )
 }

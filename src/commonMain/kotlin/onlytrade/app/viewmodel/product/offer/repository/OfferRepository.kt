@@ -15,6 +15,13 @@ class OfferRepository(
     onlyTradeDB: OnlyTradeDB
 ) {
     private val offerDao = onlyTradeDB.offerQueries
+
+    fun getMyOffer(offerMakerId: Long, offerReceiverProductId: Long) =
+        offerDao.transactionWithResult {
+            offerDao.getMyOffer(offerMakerId, offerReceiverProductId).executeAsOneOrNull()
+                ?.run { toModel(this) }
+        }
+
     suspend fun addOffer(
         offerReceiverId: Long,
         offerReceiverProductId: Long,

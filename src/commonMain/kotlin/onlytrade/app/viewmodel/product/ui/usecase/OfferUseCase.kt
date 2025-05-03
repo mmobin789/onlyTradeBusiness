@@ -4,6 +4,7 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.withContext
 import onlytrade.app.IODispatcher
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
+import onlytrade.app.viewmodel.product.offer.repository.data.db.Offer
 
 class OfferUseCase(private val offerRepository: OfferRepository) {
     suspend operator fun invoke(
@@ -12,13 +13,13 @@ class OfferUseCase(private val offerRepository: OfferRepository) {
         offerRepository.addOffer(offerReceiverId, offerReceiverProductId, offeredProductIds)
             .run {
                 if (statusCode == HttpStatusCode.Created.value) // offer made.
-                    Result.OfferMade
+                    Result.OfferMade(offer!!) // offer guaranteed.
                 else Result.Error(error = error ?: "Something went wrong.")
             }
     }
 
     sealed class Result {
-        data object OfferMade : Result()
+        data class OfferMade(val offer: Offer) : Result()
         data class Error(val error: String) : Result()
     }
 

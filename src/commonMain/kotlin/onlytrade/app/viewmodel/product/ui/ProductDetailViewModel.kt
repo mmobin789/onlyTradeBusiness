@@ -4,17 +4,23 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import onlytrade.app.IODispatcher
 import onlytrade.app.viewmodel.login.repository.LoginRepository
+import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.CheckMyOffer
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.GuestUser
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.Idle
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MakeOfferFail
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MakingOffer
-import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferMade
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MyOfferPlaced
 import onlytrade.app.viewmodel.product.ui.usecase.OfferUseCase
 
 class ProductDetailViewModel(
     private val offerUseCase: OfferUseCase,
-    private val loginRepository: LoginRepository
+    private val loginRepository: LoginRepository,
+    private val offerRepository: OfferRepository
 ) : ViewModel() {
 
     var uiState: MutableStateFlow<ProductDetailUiState> = MutableStateFlow(Idle)
@@ -26,24 +32,51 @@ class ProductDetailViewModel(
         uiState.value = Idle
     }
 
+    fun getMyOffer(offerReceiverProductId: Long) {
+
+        if (loginRepository.isUserLoggedIn().not()) {
+            uiState.value = GuestUser
+            return
+        }
+
+        uiState.value = CheckMyOffer
+
+        viewModelScope.launch {
+            withContext(IODispatcher) {
+                offerRepository.getMyOffer(
+                    offerMakerId = user!!.id,
+                    offerReceiverProductId
+                )
+            }?.run {
+                uiState.value = MyOfferPlaced(this)
+            }
+        }
+    }
+
     fun makeOffer(productId: Long, offerReceiverId: Long, offeredProductIds: HashSet<Long>) {
         uiState.value = MakingOffer
         viewModelScope.launch {
-            uiState.value = when (offerUseCase(
+            uiState.value = when (val result = offerUseCase(
                 offerReceiverId = offerReceiverId,
                 offerReceiverProductId = productId,
                 offeredProductIds = offeredProductIds,
             )) {
                 is OfferUseCase.Result.Error -> MakeOfferFail
-                OfferUseCase.Result.OfferMade -> OfferMade
+                is OfferUseCase.Result.OfferMade -> MyOfferPlaced(result.offer)
             }
         }
     }
 
-    fun isUserLoggedIn() = loginRepository.isUserLoggedIn()
-
+    /**
+     * Memory-check.
+     * This is performed before local db check.
+     */
     fun gotAnOffer(offerReceiverId: Long) = user?.id == offerReceiverId
 
+    /**
+     * Memory-check.
+     * This is performed before local db check.
+     */
     fun hasMyOffer(offerMakerId: Long) = user?.id == offerMakerId
 
     /**

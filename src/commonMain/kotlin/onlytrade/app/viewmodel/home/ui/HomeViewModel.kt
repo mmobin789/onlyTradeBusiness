@@ -15,7 +15,7 @@ import onlytrade.app.viewmodel.product.repository.data.db.Product
 
 class HomeViewModel(
     private val getProductsUseCase: GetProductsUseCase,
-    loginRepository: LoginRepository
+    private val loginRepository: LoginRepository
 ) : ViewModel() {
 
     var uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(Idle)
@@ -70,7 +70,9 @@ class HomeViewModel(
                     if (productPage.size == productPageSizeExpected)
                         productsPageNo++
 
-                    productList.value += productPage
+                    productList.value += productPage.filterNot { product ->
+                        product.userId == loginRepository.user()?.id
+                    }
 
 
                     idle()

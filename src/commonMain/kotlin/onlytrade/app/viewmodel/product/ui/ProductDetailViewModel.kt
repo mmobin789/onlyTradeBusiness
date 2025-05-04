@@ -8,6 +8,7 @@ import kotlinx.coroutines.withContext
 import onlytrade.app.IODispatcher
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
+import onlytrade.app.viewmodel.product.repository.data.db.Product
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.GuestUser
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.Idle
@@ -32,8 +33,12 @@ class ProductDetailViewModel(
 
     private val user = loginRepository.user()
 
+    fun idle() {
+        uiState.value = Idle
+    }
 
-    fun checkOffer(productUserId: Long) {
+
+    fun checkOffer(product: Product) {
 
         if (loginRepository.isUserLoggedIn().not()) {
             uiState.value = GuestUser
@@ -41,11 +46,11 @@ class ProductDetailViewModel(
         }
 
 
-        uiState.value = if (isMyProduct(productUserId).not()) {
-            getOfferMade(productUserId)
+        uiState.value = if (isMyProduct(product.userId).not()) {
+            getOfferMade(product.id)
             LoadingOfferReceived
         } else {
-            getOfferReceived(productUserId)
+            getOfferReceived(product.id)
             LoadingOfferMade
         }
     }

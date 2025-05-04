@@ -9,9 +9,10 @@ import onlytrade.app.IODispatcher
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState
-import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.CheckingOffer
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.GuestUser
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.Idle
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.LoadingOfferMade
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.LoadingOfferReceived
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MakeOfferFail
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MakingOffer
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferMade
@@ -39,12 +40,14 @@ class ProductDetailViewModel(
             return
         }
 
-        uiState.value = CheckingOffer
 
-        if (isMyProduct(productId).not())
+        uiState.value = if (isMyProduct(productId).not()) {
             getOfferMade(productId)
-        else
+            LoadingOfferReceived
+        } else {
             getOfferReceived(productId)
+            LoadingOfferMade
+        }
     }
 
 

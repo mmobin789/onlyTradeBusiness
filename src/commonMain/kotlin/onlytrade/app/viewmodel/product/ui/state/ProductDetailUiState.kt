@@ -4,9 +4,12 @@ import onlytrade.app.viewmodel.product.offer.repository.data.db.Offer
 
 sealed class ProductDetailUiState {
     data object Idle : ProductDetailUiState()
+    data object CheckingOffer : ProductDetailUiState()
     data object GuestUser : ProductDetailUiState()
-    data object CheckMyOffer : ProductDetailUiState()
-    data class MyOfferPlaced(val offer: Offer) : ProductDetailUiState()
+    data object OfferReceived : ProductDetailUiState()
+    data object OfferNotReceived : ProductDetailUiState()
+    data class OfferMade(val offer: Offer) : ProductDetailUiState()
+    data object OfferNotMade : ProductDetailUiState()
     data object MakingOffer : ProductDetailUiState()
     data object MakeOfferFail : ProductDetailUiState()
 }

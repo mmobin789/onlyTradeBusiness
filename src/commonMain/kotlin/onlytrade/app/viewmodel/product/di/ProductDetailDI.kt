@@ -2,6 +2,8 @@ package onlytrade.app.viewmodel.product.di
 
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.AddOfferApi
+import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.GetOfferMadeApi
+import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.GetOfferReceivedApi
 import onlytrade.app.viewmodel.product.ui.ProductDetailViewModel
 import onlytrade.app.viewmodel.product.ui.usecase.GetProductDetailUseCase
 import onlytrade.app.viewmodel.product.ui.usecase.OfferUseCase
@@ -15,4 +17,6 @@ val productDetailModule = module {
     factoryOf(::OfferUseCase)
     factoryOf(::OfferRepository)
     factoryOf(::AddOfferApi)
+    factoryOf(::GetOfferMadeApi)
+    factoryOf(::GetOfferReceivedApi)
 }

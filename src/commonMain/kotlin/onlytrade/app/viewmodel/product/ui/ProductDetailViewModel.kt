@@ -9,12 +9,15 @@ import onlytrade.app.IODispatcher
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState
-import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.CheckMyOffer
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.CheckingOffer
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.GuestUser
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.Idle
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MakeOfferFail
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MakingOffer
-import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MyOfferPlaced
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferMade
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferNotMade
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferNotReceived
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferReceived
 import onlytrade.app.viewmodel.product.ui.usecase.OfferUseCase
 
 class ProductDetailViewModel(
@@ -28,27 +31,49 @@ class ProductDetailViewModel(
 
     private val user = loginRepository.user()
 
-    fun idle() {
-        uiState.value = Idle
-    }
 
-    fun getMyOffer(offerReceiverProductId: Long) {
+    fun checkOffer(productId: Long) {
 
         if (loginRepository.isUserLoggedIn().not()) {
             uiState.value = GuestUser
             return
         }
 
-        uiState.value = CheckMyOffer
+        uiState.value = CheckingOffer
+
+        if (isMyProduct(productId).not())
+            getOfferMade(productId)
+        else
+            getOfferReceived(productId)
+    }
+
+
+    private fun getOfferMade(offerReceiverProductId: Long) {
 
         viewModelScope.launch {
             withContext(IODispatcher) {
-                offerRepository.getMyOffer(
+                offerRepository.getOfferMade(
                     offerMakerId = user!!.id,
                     offerReceiverProductId
                 )
-            }?.run {
-                uiState.value = MyOfferPlaced(this)
+            }.run {
+                uiState.value =
+                    if (offer == null) OfferNotMade else OfferMade(offer = offer)
+            }
+        }
+    }
+
+    private fun getOfferReceived(offerReceiverProductId: Long) {
+
+        viewModelScope.launch {
+            withContext(IODispatcher) {
+                offerRepository.getOfferReceived(
+                    offerReceiverId = user!!.id,
+                    offerReceiverProductId
+                )
+            }.run {
+                uiState.value =
+                    if (offer == null) OfferNotReceived else OfferReceived
             }
         }
     }
@@ -62,7 +87,7 @@ class ProductDetailViewModel(
                 offeredProductIds = offeredProductIds,
             )) {
                 is OfferUseCase.Result.Error -> MakeOfferFail
-                is OfferUseCase.Result.OfferMade -> MyOfferPlaced(result.offer)
+                is OfferUseCase.Result.OfferMade -> OfferMade(result.offer)
             }
         }
     }
@@ -71,18 +96,20 @@ class ProductDetailViewModel(
      * Memory-check.
      * This is performed before local db check.
      */
-    fun gotAnOffer(offerReceiverId: Long) = user?.id == offerReceiverId
+    fun receivedOffer(offerReceiverId: Long) = user?.id == offerReceiverId
 
     /**
      * Memory-check.
      * This is performed before local db check.
      */
-    fun hasMyOffer(offerMakerId: Long) = user?.id == offerMakerId
+    fun madeOffer(offerMakerId: Long) = user?.id == offerMakerId
 
     /**
+     * Memory-check
+     * This is performed before local db check.
      * Each product has it's user's id.
      * If product's user id is same as logged in user's id,then it's logged in user's product.
      */
-    fun isMyProduct(productUserId: Long) = user?.id == productUserId
+    private fun isMyProduct(productUserId: Long) = user?.id == productUserId
 
 }

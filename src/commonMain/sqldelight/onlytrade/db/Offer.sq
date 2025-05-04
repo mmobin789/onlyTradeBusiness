@@ -15,7 +15,7 @@ add:
 INSERT OR REPLACE INTO Offer(id,offerMakerId,offerReceiverId, offerReceiverProductId, offeredProductIds,extraPrice,accepted,completed)
 VALUES (?, ?,?,?,? ,?,?,?);
 
-getMyOffer:
+getOfferMade:
 SELECT * FROM Offer
 WHERE offerMakerId = ? AND offerReceiverProductId = ?;
 

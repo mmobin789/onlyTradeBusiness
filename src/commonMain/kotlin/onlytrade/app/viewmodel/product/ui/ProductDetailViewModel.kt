@@ -33,7 +33,7 @@ class ProductDetailViewModel(
     private val user = loginRepository.user()
 
 
-    fun checkOffer(productId: Long) {
+    fun checkOffer(productUserId: Long) {
 
         if (loginRepository.isUserLoggedIn().not()) {
             uiState.value = GuestUser
@@ -41,11 +41,11 @@ class ProductDetailViewModel(
         }
 
 
-        uiState.value = if (isMyProduct(productId).not()) {
-            getOfferMade(productId)
+        uiState.value = if (isMyProduct(productUserId).not()) {
+            getOfferMade(productUserId)
             LoadingOfferReceived
         } else {
-            getOfferReceived(productId)
+            getOfferReceived(productUserId)
             LoadingOfferMade
         }
     }

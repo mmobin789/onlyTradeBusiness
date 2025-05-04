@@ -51,7 +51,7 @@ class OfferRepository(
 
     suspend fun getOfferReceived(offerReceiverId: Long, offerReceiverProductId: Long) =
         offerDao.transactionWithResult {
-            offerDao.getOfferMade(offerReceiverId, offerReceiverProductId).executeAsOneOrNull()
+            offerDao.getOfferReceived(offerReceiverId, offerReceiverProductId).executeAsOneOrNull()
                 ?.run { toModel(this) }
         }.let { localOffer ->
             if (localOffer == null) {

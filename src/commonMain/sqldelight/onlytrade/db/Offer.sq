@@ -19,6 +19,10 @@ getOfferMade:
 SELECT * FROM Offer
 WHERE offerMakerId = ? AND offerReceiverProductId = ?;
 
+getOfferReceived:
+SELECT * FROM Offer
+WHERE offerReceiverId = ? AND offerReceiverProductId = ?;
+
 getOffersByProductId:
 SELECT * FROM Offer
 WHERE offerReceiverProductId = ?;

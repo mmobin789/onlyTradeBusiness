@@ -86,7 +86,7 @@ class ProductDetailViewModel(
         }
     }
 
-    fun makeOffer(productId: Long, offerReceiverId: Long, offeredProductIds: HashSet<Long>) {
+    fun makeOffer(productId: Long, offerReceiverId: Long, offeredProductIds: LinkedHashSet<Long>) {
         uiState.value = MakingOffer
         viewModelScope.launch {
             uiState.value = when (val result = offerUseCase(

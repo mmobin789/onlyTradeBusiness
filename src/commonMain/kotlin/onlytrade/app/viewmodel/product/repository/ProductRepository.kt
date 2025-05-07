@@ -6,8 +6,11 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.Instant
 import kotlinx.datetime.until
+import kotlinx.serialization.json.Json
 import onlytrade.app.viewmodel.login.repository.LoginRepository
-import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
+import onlytrade.app.viewmodel.product.offer.repository.data.OfferMapper.toOffer
+import onlytrade.app.viewmodel.product.offer.repository.data.db.Offer
+import onlytrade.app.viewmodel.product.repository.data.ProductMapper.toProduct
 import onlytrade.app.viewmodel.product.repository.data.db.Product
 import onlytrade.app.viewmodel.product.repository.data.remote.api.AddProductApi
 import onlytrade.app.viewmodel.product.repository.data.remote.api.GetProductsApi
@@ -20,13 +23,14 @@ class ProductRepository(
     private val loginRepository: LoginRepository,
     private val addProductApi: AddProductApi,
     private val getProductsApi: GetProductsApi,
-    private val offerRepository: OfferRepository,
     private val localPrefs: Settings,
     onlyTradeDB: OnlyTradeDB
 ) {
-    private val productLastUpdatedAt = "PRODUCTS_LAST_UPDATED_AT"
+    private val productsLastUpdatedAt = "PRODUCTS_LAST_UPDATED_AT"
 
     private val dao = onlyTradeDB.productQueries
+
+    private val offerDao = onlyTradeDB.offerQueries
 
     suspend fun addProduct(addProductRequest: AddProductRequest) =
         loginRepository.jwtToken()?.run {
@@ -38,15 +42,18 @@ class ProductRepository(
 
     fun getProduct(productId: Long) = dao.transactionWithResult {
         val localProduct = dao.getById(productId).executeAsOne()
-        toProduct(localProduct)
+        toProduct(localProduct, getOffersByProductId(localProduct.id))
     }
+
+    private fun getProductsByIds(ids: Set<Long>) =
+        dao.getProductsByIds(ids).executeAsList().map { toProduct(it, getOffersByProductId(it.id)) }
 
 
     suspend fun getProducts(
         pageNo: Int,
         pageSize: Int,
         userId: Long? = null
-    ) = localPrefs.getStringOrNull(productLastUpdatedAt)?.run {
+    ) = localPrefs.getStringOrNull(productsLastUpdatedAt)?.run {
         val productUpdateDateTime = Instant.parse(this)
         val now = Clock.System.now()
         val minutesDiff = productUpdateDateTime.until(now, DateTimeUnit.MINUTE)
@@ -70,49 +77,87 @@ class ProductRepository(
 
         return GetProductsResponse().run {
             val localProductList =
-                dao.transactionWithResult { localProducts.executeAsList() }
+                dao.transactionWithResult {
+                    localProducts.executeAsList().map { toProduct(it, getOffersByProductId(it.id)) }
+                }
             if (localProductList.isEmpty()) {
                 getProductsApi(pageNo, pageSize, userId)
             } else {
                 copy(
                     statusCode = HttpStatusCode.OK.value,
-                    products = localProductList.map(::toProduct)
+                    products = localProductList
                 )
             }
 
         }
-    } ?: run {
-        getProductsApi(pageNo, pageSize, userId)
-    }
+    } ?: getProductsApi(pageNo, pageSize, userId)
 
 
     private suspend fun getProductsApi(pageNo: Int, pageSize: Int, userId: Long? = null) =
         getProductsApi.getProducts(pageNo, pageSize, userId).also {
             val products = it.products
             if (products.isNullOrEmpty()) {
-                deleteProducts()
+                deleteProductsAndOffers()
             } else {
                 localPrefs.putString(
-                    productLastUpdatedAt,
+                    productsLastUpdatedAt,
                     Clock.System.now().toString()
                 )
-                products.forEach { product ->
-                    addProduct(product)
-                    product.offers?.forEach { offer ->
-                        offerRepository.addOffer(offer)
-                    }
-                }
+                addProductsAndOffers(products)
             }
         }
 
     /**
-     * method to delete all products from local db.
+     * method to delete all products and offers from local db.
      * Do not call this from main thread.
      * Blocking synchronous operation.
      */
-    private fun deleteProducts() {
+    private fun deleteProductsAndOffers() {
         dao.transaction {
             dao.deleteAll()
+            offerDao.deleteAll()
+        }
+    }
+
+    /**
+     * method to batch insert products with offers into local db.
+     * DO NOT call this from main thread.
+     */
+    private fun addProductsAndOffers(products: List<Product>) {
+        dao.transaction {
+            products.forEach { product ->
+                product.run {
+                    dao.insert(
+                        id = id,
+                        categoryId = categoryId,
+                        subcategoryId = subcategoryId,
+                        userId = userId,
+                        name = name,
+                        description = description,
+                        estPrice = estPrice,
+                        imageUrls = imageUrls.joinToString(",")
+                    )
+
+                    offers?.let { offers ->
+                        addOffers(offers)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun addOffers(offers: List<Offer>) = offers.forEach { offer ->
+        offer.run {
+            offerDao.add(
+                id = id,
+                offerMakerId = offerMakerId,
+                offerReceiverId = offerReceiverId,
+                offerReceiverProductId = offerReceiverProductId,
+                offeredProductIds = Json.encodeToString(offeredProductIds),
+                extraPrice = extraPrice,
+                accepted = accepted,
+                completed = completed
+            )
         }
     }
 
@@ -135,29 +180,11 @@ class ProductRepository(
         }
     }
 
-    /*    private fun Product.toLocalProduct() = let { product ->
-            onlytrade.db.Product(
-                id = product.id,
-                categoryId = product.categoryId,
-                subcategoryId = product.subcategoryId,
-                userId = product.userId,
-                name = product.name,
-                description = product.description,
-                estPrice = product.estPrice,
-                imageUrls = product.imageUrls.joinToString(",")
-            )
-        }*/
 
-    private fun toProduct(localProduct: onlytrade.db.Product) =
-        Product(
-            id = localProduct.id,
-            categoryId = localProduct.categoryId,
-            subcategoryId = localProduct.subcategoryId,
-            userId = localProduct.userId,
-            name = localProduct.name,
-            description = localProduct.description,
-            estPrice = localProduct.estPrice,
-            imageUrls = localProduct.imageUrls.split(","),
-            offers = offerRepository.getOffersByProductId(localProduct.id).ifEmpty { null }
-        )
+    private fun getOffersByProductId(productId: Long): List<Offer> =
+        //todo maybe add remote fetch as well (very rare case as products would come with offers always when fetched from remote.
+        offerDao.getOffersByProductId(productId).executeAsList()
+            .map { toOffer(it, getProductsByIds(Json.decodeFromString(it.offeredProductIds))) }
+
+
 }

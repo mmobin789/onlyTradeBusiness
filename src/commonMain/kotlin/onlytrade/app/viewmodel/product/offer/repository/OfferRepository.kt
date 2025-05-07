@@ -1,17 +1,26 @@
 package onlytrade.app.viewmodel.product.offer.repository
 
+import com.russhwolf.settings.Settings
 import io.ktor.http.HttpStatusCode
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.Instant
+import kotlinx.datetime.until
 import kotlinx.serialization.json.Json
 import onlytrade.app.viewmodel.login.repository.LoginRepository
+import onlytrade.app.viewmodel.product.offer.repository.data.OfferMapper.toOffer
 import onlytrade.app.viewmodel.product.offer.repository.data.db.Offer
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.AddOfferApi
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.GetOfferMadeApi
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.GetOfferReceivedApi
+import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.GetOffersApi
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.request.AddOfferRequest
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.request.GetOfferMadeRequest
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.request.GetOfferReceivedRequest
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.AddOfferResponse
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.GetOfferResponse
+import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.GetOffersResponse
+import onlytrade.app.viewmodel.product.repository.data.ProductMapper.toProduct
 import onlytrade.db.OnlyTradeDB
 
 class OfferRepository(
@@ -19,14 +28,58 @@ class OfferRepository(
     private val addOfferApi: AddOfferApi,
     private val getOfferMadeApi: GetOfferMadeApi,
     private val getOfferReceivedApi: GetOfferReceivedApi,
+    private val getOffersApi: GetOffersApi,
+    private val localPrefs: Settings,
     onlyTradeDB: OnlyTradeDB
 ) {
+    private val offersLastUpdatedAt = "OFFERS_LAST_UPDATED_AT"
+
     private val offerDao = onlyTradeDB.offerQueries
+
+    private val productDao = onlyTradeDB.productQueries
+
+    private suspend fun getOffersApi() = loginRepository.jwtToken()?.let { jwtToken ->
+        getOffersApi.getOffers(jwtToken).also {
+            if (it.offers.isNullOrEmpty()) offerDao.transaction { offerDao.deleteAll() }
+            else {
+                localPrefs.putString(offersLastUpdatedAt, Clock.System.now().toString())
+                addOffers(it.offers)
+
+            }
+        }
+    } ?: GetOffersResponse(
+        statusCode = HttpStatusCode.Unauthorized.value,
+        error = HttpStatusCode.Unauthorized.description
+    )
+
+    suspend fun getOffers() = localPrefs.getStringOrNull(offersLastUpdatedAt)?.run {
+        val offersUpdateDateTime = Instant.parse(this)
+        val now = Clock.System.now()
+        val minutesDiff = offersUpdateDateTime.until(now, DateTimeUnit.MINUTE)
+        val updateRequired =
+            minutesDiff >= 2  // 2 minutes //todo need to update server sync time.
+
+        if (updateRequired) {
+            getOffersApi()
+        } else {
+            val localOffers = offerDao.transactionWithResult {
+                offerDao.getOffers().executeAsList().map {
+                    toOffer(
+                        it,
+                        getProductsByIds(Json.decodeFromString(it.offeredProductIds))
+                    )
+                }
+            }
+            if (localOffers.isEmpty()) {
+                getOffersApi()
+            } else GetOffersResponse(offers = localOffers, statusCode = HttpStatusCode.OK.value)
+        }
+    } ?: getOffersApi()
 
     suspend fun getOfferMade(offerMakerId: Long, offerReceiverProductId: Long) =
         offerDao.transactionWithResult {
             offerDao.getOfferMade(offerMakerId, offerReceiverProductId).executeAsOneOrNull()
-                ?.run { toModel(this) }
+                ?.run { toOffer(this, getProductsByIds(Json.decodeFromString(offeredProductIds))) }
         }.let { localOffer ->
             if (localOffer == null) {
                 loginRepository.jwtToken()?.run {
@@ -48,11 +101,13 @@ class OfferRepository(
             } else GetOfferResponse(offer = localOffer)
         }
 
-
+    /**
+     * The returns the 1st offer received by the user.
+     */
     suspend fun getOfferReceived(offerReceiverId: Long, offerReceiverProductId: Long) =
         offerDao.transactionWithResult {
             offerDao.getOfferReceived(offerReceiverId, offerReceiverProductId).executeAsOneOrNull()
-                ?.run { toModel(this) }
+                ?.run { toOffer(this, getProductsByIds(Json.decodeFromString(offeredProductIds))) }
         }.let { localOffer ->
             if (localOffer == null) {
                 loginRepository.jwtToken()?.run {
@@ -75,7 +130,7 @@ class OfferRepository(
         }
 
     suspend fun addOffer(
-        offerReceiverId: Long, offerReceiverProductId: Long, offeredProductIds: HashSet<Long>
+        offerReceiverId: Long, offerReceiverProductId: Long, offeredProductIds: LinkedHashSet<Long>
     ) = loginRepository.jwtToken()?.run {
         val addOfferRequest = AddOfferRequest(
             offer = Offer(
@@ -99,7 +154,7 @@ class OfferRepository(
         error = HttpStatusCode.Unauthorized.description
     )
 
-    fun addOffer(offer: Offer) = offerDao.transaction {
+    private fun addOffer(offer: Offer) = offerDao.transaction {
         offer.run {
             offerDao.add(
                 id = id,
@@ -114,33 +169,34 @@ class OfferRepository(
         }
     }
 
-    fun getOffersByProductId(productId: Long) = //todo add fetch from remote.
-        offerDao.getOffersByProductId(productId).executeAsList().map(::toModel)
 
-
-    private fun toModel(offer: onlytrade.db.Offer) = offer.run {
-        Offer(
-            id = id,
-            offerMakerId = offerMakerId,
-            offerReceiverId = offerReceiverId,
-            offerReceiverProductId = offerReceiverProductId,
-            offeredProductIds = Json.decodeFromString(offeredProductIds),
-            extraPrice = extraPrice,
-            accepted = accepted,
-            completed = completed
-        )
+    private fun addOffers(offers: List<Offer>) = offerDao.transaction {
+        offers.forEach { offer ->
+            offer.run {
+                offerDao.add(
+                    id = id,
+                    offerMakerId = offerMakerId,
+                    offerReceiverId = offerReceiverId,
+                    offerReceiverProductId = offerReceiverProductId,
+                    offeredProductIds = Json.encodeToString(offeredProductIds),
+                    extraPrice = extraPrice,
+                    accepted = accepted,
+                    completed = completed
+                )
+            }
+        }
     }
 
-    /*    private fun Offer.toLocalOffer() = run {
-            onlytrade.db.Offer(
-                id = id,
-                offerMakerId = offerMakerId,
-                offerReceiverId = offerReceiverId,
-                offerReceiverProductId = offerReceiverProductId,
-                offeredProductIds = Json.encodeToString(offeredProductIds),
-                extraPrice = extraPrice,
-                accepted = accepted,
-                completed = completed
-            )
-        }*/
+
+    private fun getOffersByProductId(productId: Long): List<Offer> =
+        //todo maybe add remote fetch as well (very rare case as products would come with offers always when fetched from remote.
+        offerDao.getOffersByProductId(productId).executeAsList()
+            .map { toOffer(it, getProductsByIds(Json.decodeFromString(it.offeredProductIds))) }
+
+
+    private fun getProductsByIds(ids: Set<Long>) =
+        productDao.getProductsByIds(ids).executeAsList()
+            .map { toProduct(it, getOffersByProductId(it.id)) }
+
+
 }

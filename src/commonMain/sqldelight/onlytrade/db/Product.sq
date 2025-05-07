@@ -30,5 +30,9 @@ WHERE userId = ?
 ORDER BY id DESC
 LIMIT ? OFFSET ?;
 
+getProductsByIds:
+SELECT * FROM Product
+WHERE id IN ?;
+
 deleteAll:
 DELETE FROM Product;

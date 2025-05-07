@@ -62,23 +62,22 @@ class HomeViewModel(
                     pageNo = productsPageNo,
                     pageSize = productPageSizeExpected
                 )) {
-                is GetProductsUseCase.Result.GetProducts -> {
+                is GetProductsUseCase.Result.ProductPage -> {
                     productsNotFound = false
 
-                    val productPage = result.products
+                    val productPage = result.products.filterNot { product ->
+                        product.userId == loginRepository.user()?.id
+                    }
 
                     if (productPage.size == productPageSizeExpected)
                         productsPageNo++
 
-                    productList.value += productPage.filterNot { product ->
-                        product.userId == loginRepository.user()?.id
-                    }
+                    productList.value += productPage
 
 
                     idle()
 
                 }
-
 
                 GetProductsUseCase.Result.ProductsNotFound -> {
                     productsNotFound = true

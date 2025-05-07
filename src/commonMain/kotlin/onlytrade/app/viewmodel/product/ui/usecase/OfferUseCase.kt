@@ -8,7 +8,7 @@ import onlytrade.app.viewmodel.product.offer.repository.data.db.Offer
 
 class OfferUseCase(private val offerRepository: OfferRepository) {
     suspend operator fun invoke(
-        offerReceiverId: Long, offerReceiverProductId: Long, offeredProductIds: HashSet<Long>
+        offerReceiverId: Long, offerReceiverProductId: Long, offeredProductIds: LinkedHashSet<Long>
     ) = withContext(IODispatcher) {
         offerRepository.addOffer(offerReceiverId, offerReceiverProductId, offeredProductIds)
             .run {

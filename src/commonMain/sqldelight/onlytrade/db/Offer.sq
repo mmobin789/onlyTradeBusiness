@@ -15,6 +15,10 @@ add:
 INSERT OR REPLACE INTO Offer(id,offerMakerId,offerReceiverId, offerReceiverProductId, offeredProductIds,extraPrice,accepted,completed)
 VALUES (?, ?,?,?,? ,?,?,?);
 
+
+getOffers:
+SELECT * FROM Offer;
+
 getOfferMade:
 SELECT * FROM Offer
 WHERE offerMakerId = ? AND offerReceiverProductId = ?;

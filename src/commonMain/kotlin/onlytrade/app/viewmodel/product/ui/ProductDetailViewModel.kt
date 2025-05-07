@@ -64,7 +64,7 @@ class ProductDetailViewModel(
                     offerMakerId = user!!.id,
                     offerReceiverProductId
                 )
-            }.run {
+            }.let { offer ->
                 uiState.value =
                     if (offer == null) OfferNotMade else OfferMade(offer = offer)
             }
@@ -79,7 +79,7 @@ class ProductDetailViewModel(
                     offerReceiverId = user!!.id,
                     offerReceiverProductId
                 )
-            }.run {
+            }.let { offer ->
                 uiState.value =
                     if (offer == null) OfferNotReceived else OfferReceived
             }

@@ -11,14 +11,9 @@ import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.data.OfferMapper.toOffer
 import onlytrade.app.viewmodel.product.offer.repository.data.db.Offer
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.AddOfferApi
-import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.GetOfferMadeApi
-import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.GetOfferReceivedApi
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.GetOffersApi
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.request.AddOfferRequest
-import onlytrade.app.viewmodel.product.offer.repository.data.remote.request.GetOfferMadeRequest
-import onlytrade.app.viewmodel.product.offer.repository.data.remote.request.GetOfferReceivedRequest
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.AddOfferResponse
-import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.GetOfferResponse
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.GetOffersResponse
 import onlytrade.app.viewmodel.product.repository.data.ProductMapper.toProduct
 import onlytrade.db.OnlyTradeDB
@@ -26,8 +21,6 @@ import onlytrade.db.OnlyTradeDB
 class OfferRepository(
     private val loginRepository: LoginRepository,
     private val addOfferApi: AddOfferApi,
-    private val getOfferMadeApi: GetOfferMadeApi,
-    private val getOfferReceivedApi: GetOfferReceivedApi,
     private val getOffersApi: GetOffersApi,
     private val localPrefs: Settings,
     onlyTradeDB: OnlyTradeDB
@@ -76,57 +69,24 @@ class OfferRepository(
         }
     } ?: getOffersApi()
 
-    suspend fun getOfferMade(offerMakerId: Long, offerReceiverProductId: Long) =
+    /**
+     * The returns the 1st offer made by the user.
+     * This method is offline only.
+     */
+    fun getOfferMade(offerMakerId: Long, offerReceiverProductId: Long) =
         offerDao.transactionWithResult {
             offerDao.getOfferMade(offerMakerId, offerReceiverProductId).executeAsOneOrNull()
                 ?.run { toOffer(this, getProductsByIds(Json.decodeFromString(offeredProductIds))) }
-        }.let { localOffer ->
-            if (localOffer == null) {
-                loginRepository.jwtToken()?.run {
-                    getOfferMadeApi.getOfferMade(
-                        GetOfferMadeRequest(
-                            offerMakerId, offerReceiverProductId
-                        ), jwtToken = this
-                    ).also {
-                        it.offer?.run {
-                            addOffer(this)
-                        }
-                    }
-                } ?: run {
-                    GetOfferResponse(
-                        statusCode = HttpStatusCode.Unauthorized.value,
-                        error = HttpStatusCode.Unauthorized.description
-                    )
-                }
-            } else GetOfferResponse(offer = localOffer)
         }
 
     /**
      * The returns the 1st offer received by the user.
+     * This method is offline only.
      */
-    suspend fun getOfferReceived(offerReceiverId: Long, offerReceiverProductId: Long) =
+    fun getOfferReceived(offerReceiverId: Long, offerReceiverProductId: Long) =
         offerDao.transactionWithResult {
             offerDao.getOfferReceived(offerReceiverId, offerReceiverProductId).executeAsOneOrNull()
                 ?.run { toOffer(this, getProductsByIds(Json.decodeFromString(offeredProductIds))) }
-        }.let { localOffer ->
-            if (localOffer == null) {
-                loginRepository.jwtToken()?.run {
-                    getOfferReceivedApi.getOfferReceived(
-                        GetOfferReceivedRequest(
-                            offerReceiverId, offerReceiverProductId
-                        ), jwtToken = this
-                    ).also {
-                        it.offer?.run {
-                            addOffer(this)
-                        }
-                    }
-                } ?: run {
-                    GetOfferResponse(
-                        statusCode = HttpStatusCode.Unauthorized.value,
-                        error = HttpStatusCode.Unauthorized.description
-                    )
-                }
-            } else GetOfferResponse(offer = localOffer)
         }
 
     suspend fun addOffer(

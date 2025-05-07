@@ -43,5 +43,9 @@ WHERE offerReceiverId = ?
 ORDER BY id DESC
 LIMIT ? OFFSET ?;
 
+deleteById:
+DELETE FROM Offer
+WHERE id = ?;
+
 deleteAll:
 DELETE FROM Offer;

@@ -13,4 +13,8 @@ sealed class ProductDetailUiState {
     data object OfferNotMade : ProductDetailUiState()
     data object MakingOffer : ProductDetailUiState()
     data object MakeOfferFail : ProductDetailUiState()
+    data object WithdrawingOffer : ProductDetailUiState()
+    data object OfferDeleted : ProductDetailUiState()
+    data object OfferNotFound : ProductDetailUiState()
+    data class OfferDeleteApiError(val error: String) : ProductDetailUiState()
 }

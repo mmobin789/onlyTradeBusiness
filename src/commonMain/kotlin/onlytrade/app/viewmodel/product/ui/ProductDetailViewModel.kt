@@ -8,6 +8,7 @@ import kotlinx.coroutines.withContext
 import onlytrade.app.IODispatcher
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
+import onlytrade.app.viewmodel.product.offer.ui.usecase.WithdrawOfferUseCase
 import onlytrade.app.viewmodel.product.repository.data.db.Product
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.GuestUser
@@ -16,14 +17,19 @@ import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.LoadingOffe
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.LoadingOfferReceived
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MakeOfferFail
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MakingOffer
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferDeleteApiError
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferDeleted
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferMade
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferNotFound
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferNotMade
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferNotReceived
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferReceived
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.WithdrawingOffer
 import onlytrade.app.viewmodel.product.ui.usecase.OfferUseCase
 
 class ProductDetailViewModel(
     private val offerUseCase: OfferUseCase,
+    private val withdrawOfferUseCase: WithdrawOfferUseCase,
     private val loginRepository: LoginRepository,
     private val offerRepository: OfferRepository
 ) : ViewModel() {
@@ -52,6 +58,22 @@ class ProductDetailViewModel(
         } else {
             getOfferReceived(product.id)
             LoadingOfferMade
+        }
+    }
+
+
+    fun withdrawOffer(offerReceiverProductId: Long) {
+        uiState.value = WithdrawingOffer
+        viewModelScope.launch {
+            uiState.value = when (val result =
+                withdrawOfferUseCase(
+                    offerMakerId = user!!.id,
+                    offerReceiverProductId = offerReceiverProductId
+                )) {
+                WithdrawOfferUseCase.Result.OfferDeleted -> OfferDeleted
+                WithdrawOfferUseCase.Result.OfferNotFound -> OfferNotFound
+                is WithdrawOfferUseCase.Result.Error -> OfferDeleteApiError(result.error)
+            }
         }
     }
 

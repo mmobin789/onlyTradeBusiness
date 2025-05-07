@@ -11,9 +11,11 @@ import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.data.OfferMapper.toOffer
 import onlytrade.app.viewmodel.product.offer.repository.data.db.Offer
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.AddOfferApi
+import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.DeleteOfferApi
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.GetOffersApi
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.request.AddOfferRequest
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.AddOfferResponse
+import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.DeleteOfferResponse
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.GetOffersResponse
 import onlytrade.app.viewmodel.product.repository.data.ProductMapper.toProduct
 import onlytrade.db.OnlyTradeDB
@@ -22,6 +24,7 @@ class OfferRepository(
     private val loginRepository: LoginRepository,
     private val addOfferApi: AddOfferApi,
     private val getOffersApi: GetOffersApi,
+    private val deleteOfferApi: DeleteOfferApi,
     private val localPrefs: Settings,
     onlyTradeDB: OnlyTradeDB
 ) {
@@ -129,6 +132,34 @@ class OfferRepository(
         }
     }
 
+    suspend fun withdrawOffer(offerMakerId: Long, offerReceiverProductId: Long) =
+        loginRepository.jwtToken()?.run {
+            getOfferMade(offerMakerId, offerReceiverProductId)?.let { offer ->
+                deleteOfferApi.deleteOffer(this, offer.id).also {
+                    it.deletedOfferId?.let { offerId ->
+                        deleteOffer(offerId)
+                    }
+                }
+            }
+
+        } ?: DeleteOfferResponse(
+            statusCode = HttpStatusCode.Unauthorized.value,
+            error = HttpStatusCode.Unauthorized.description
+        )
+
+    suspend fun rejectOffer(offerId: Long) =
+        loginRepository.jwtToken()?.run {
+            deleteOfferApi.deleteOffer(this, offerId).also {
+                it.deletedOfferId?.let { offerId ->
+                    deleteOffer(offerId)
+                }
+            }
+
+        } ?: DeleteOfferResponse(
+            statusCode = HttpStatusCode.Unauthorized.value,
+            error = HttpStatusCode.Unauthorized.description
+        )
+
 
     private fun addOffers(offers: List<Offer>) = offerDao.transaction {
         offers.forEach { offer ->
@@ -157,6 +188,10 @@ class OfferRepository(
     private fun getProductsByIds(ids: Set<Long>) =
         productDao.getProductsByIds(ids).executeAsList()
             .map { toProduct(it, getOffersByProductId(it.id)) }
+
+    private fun deleteOffer(offerId: Long) = offerDao.transaction {
+        offerDao.deleteById(offerId)
+    }
 
 
 }

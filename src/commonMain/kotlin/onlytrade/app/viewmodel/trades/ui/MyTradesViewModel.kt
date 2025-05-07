@@ -6,11 +6,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import onlytrade.app.viewmodel.product.offer.ui.usecase.GetOffersMadeUseCase
 import onlytrade.app.viewmodel.product.offer.ui.usecase.GetOffersReceivedUseCase
+import onlytrade.app.viewmodel.product.offer.ui.usecase.RejectOfferUseCase
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.Idle
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.LoadingOffersMade
+import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.LoadingOffersReceived
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.NoOffersMade
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.NoOffersReceived
+import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.OfferDeleteApiError
+import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.OfferDeleted
+import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.OfferNotFound
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.OffersMade
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.OffersMadeError
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.OffersReceived
@@ -18,7 +23,8 @@ import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.OffersReceivedErr
 
 class MyTradesViewModel(
     private val getOffersMadeUseCase: GetOffersMadeUseCase,
-    private val getOffersReceivedUseCase: GetOffersReceivedUseCase
+    private val getOffersReceivedUseCase: GetOffersReceivedUseCase,
+    private val rejectOfferUseCase: RejectOfferUseCase
 ) : ViewModel() {
 
     var uiState: MutableStateFlow<MyTradesUiState> = MutableStateFlow(Idle)
@@ -56,7 +62,7 @@ class MyTradesViewModel(
     }
 
     fun getOffersReceived() {
-        uiState.value = LoadingOffersMade
+        uiState.value = LoadingOffersReceived
 
         viewModelScope.launch {
             when (val result =
@@ -78,4 +84,14 @@ class MyTradesViewModel(
         }
     }
 
+    //todo impl
+    fun rejectOffer(offerId: Long) {
+        viewModelScope.launch {
+            uiState.value = when (val result = rejectOfferUseCase(offerId)) {
+                RejectOfferUseCase.Result.OfferDeleted -> OfferDeleted
+                RejectOfferUseCase.Result.OfferNotFound -> OfferNotFound
+                is RejectOfferUseCase.Result.Error -> OfferDeleteApiError(result.error)
+            }
+        }
+    }
 }

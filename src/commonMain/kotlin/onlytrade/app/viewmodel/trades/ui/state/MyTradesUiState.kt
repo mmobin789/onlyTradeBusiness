@@ -12,4 +12,7 @@ sealed class MyTradesUiState {
     data object NoOffersReceived : MyTradesUiState()
     data class OffersReceived(val offers: List<Offer>) : MyTradesUiState()
     data class OffersReceivedError(val error: String) : MyTradesUiState()
+    data object OfferDeleted : MyTradesUiState()
+    data object OfferNotFound : MyTradesUiState()
+    data class OfferDeleteApiError(val error: String) : MyTradesUiState()
 }

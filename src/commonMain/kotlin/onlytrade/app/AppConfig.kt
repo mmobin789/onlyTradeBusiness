@@ -1,7 +1,7 @@
 package onlytrade.app
 
 /**
- * T
+ * To switch between server environments use this.
  */
 object AppConfig {
     private const val DEV_MODE = true

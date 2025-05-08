@@ -8,7 +8,6 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.until
 import kotlinx.serialization.json.Json
 import onlytrade.app.viewmodel.login.repository.LoginRepository
-import onlytrade.app.viewmodel.product.offer.repository.data.OfferMapper.toOffer
 import onlytrade.app.viewmodel.product.offer.repository.data.db.Offer
 import onlytrade.app.viewmodel.product.repository.data.ProductMapper.toProduct
 import onlytrade.app.viewmodel.product.repository.data.db.Product
@@ -40,19 +39,8 @@ class ProductRepository(
             error = HttpStatusCode.Unauthorized.description
         )
 
-    fun getProduct(productId: Long) = dao.transactionWithResult {
-        val localProduct = dao.getById(productId).executeAsOne()
-        toProduct(localProduct, getOffersByProductId(localProduct.id))
-    }
-
-    private fun getProductsByIds(ids: Set<Long>) =
-        dao.getProductsByIds(ids).executeAsList().map { toProduct(it, getOffersByProductId(it.id)) }
-
-
     suspend fun getProducts(
-        pageNo: Int,
-        pageSize: Int,
-        userId: Long? = null
+        pageNo: Int, pageSize: Int, userId: Long? = null
     ) = localPrefs.getStringOrNull(productsLastUpdatedAt)?.run {
         val productUpdateDateTime = Instant.parse(this)
         val now = Clock.System.now()
@@ -68,24 +56,19 @@ class ProductRepository(
         } else 0
 
         val localProducts = if (userId != null) dao.selectUsersPaged(
-            userId.toLong(),
-            pageSize.toLong(),
-            offset
+            userId.toLong(), pageSize.toLong(), offset
         )
-        else
-            dao.selectPaged(pageSize.toLong(), offset)
+        else dao.selectPaged(pageSize.toLong(), offset)
 
         return GetProductsResponse().run {
-            val localProductList =
-                dao.transactionWithResult {
-                    localProducts.executeAsList().map { toProduct(it, getOffersByProductId(it.id)) }
-                }
+            val localProductList = dao.transactionWithResult {
+                localProducts.executeAsList().map(::toProduct)
+            }
             if (localProductList.isEmpty()) {
                 getProductsApi(pageNo, pageSize, userId)
             } else {
                 copy(
-                    statusCode = HttpStatusCode.OK.value,
-                    products = localProductList
+                    statusCode = HttpStatusCode.OK.value, products = localProductList
                 )
             }
 
@@ -100,8 +83,7 @@ class ProductRepository(
                 deleteProductsAndOffers()
             } else {
                 localPrefs.putString(
-                    productsLastUpdatedAt,
-                    Clock.System.now().toString()
+                    productsLastUpdatedAt, Clock.System.now().toString()
                 )
                 addProductsAndOffers(products)
             }
@@ -135,8 +117,8 @@ class ProductRepository(
                         name = name,
                         description = description,
                         estPrice = estPrice,
-                        imageUrls = imageUrls.joinToString(",")
-                    )
+                        imageUrls = imageUrls.joinToString(","),
+                        offers = offers?.let { Json.encodeToString(it) })
 
                     offers?.let { offers ->
                         addOffers(offers)
@@ -175,16 +157,10 @@ class ProductRepository(
                 name = name,
                 description = description,
                 estPrice = estPrice,
-                imageUrls = imageUrls.joinToString(",")
+                imageUrls = imageUrls.joinToString(","),
+                offers = offers?.let { Json.encodeToString(it) }
             )
         }
     }
-
-
-    private fun getOffersByProductId(productId: Long): List<Offer> =
-        //todo maybe add remote fetch as well (very rare case as products would come with offers always when fetched from remote.
-        offerDao.getOffersByProductId(productId).executeAsList()
-            .map { toOffer(it, getProductsByIds(Json.decodeFromString(it.offeredProductIds))) }
-
 
 }

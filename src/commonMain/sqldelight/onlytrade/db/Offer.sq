@@ -31,18 +31,6 @@ getOffersByProductId:
 SELECT * FROM Offer
 WHERE offerReceiverProductId = ?;
 
-getOffersMade:
-SELECT * FROM Offer
-WHERE offerMakerId = ?
-ORDER BY id DESC
-LIMIT ? OFFSET ?;
-
-getOffersReceived:
-SELECT * FROM Offer
-WHERE offerReceiverId = ?
-ORDER BY id DESC
-LIMIT ? OFFSET ?;
-
 deleteById:
 DELETE FROM Offer
 WHERE id = ?;

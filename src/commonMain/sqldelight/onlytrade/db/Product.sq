@@ -7,12 +7,19 @@ CREATE TABLE Product (
     userId INTEGER NOT NULL,
     description TEXT NOT NULL,
     imageUrls TEXT NOT NULL,
-    estPrice REAL NOT NULL
+    estPrice REAL NOT NULL,
+    offers TEXT
 );
 
 insert:
-INSERT OR REPLACE INTO Product(id,categoryId,subcategoryId, name, userId, description, imageUrls, estPrice)
-VALUES (?, ?,?,?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO Product(id,categoryId,subcategoryId, name, userId, description, imageUrls, estPrice,offers)
+VALUES (?, ?,?,?, ?, ?, ?, ?,?);
+
+
+updateOffers:
+UPDATE Product
+SET offers = ?
+WHERE id = ?;
 
 
 getById:

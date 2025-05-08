@@ -13,5 +13,5 @@ data class Offer(
     val extraPrice: Double,
     val accepted: Boolean,
     val completed: Boolean,
-    val offeredProducts: List<Product> = emptyList()
+    val offeredProducts: List<Product>
 )

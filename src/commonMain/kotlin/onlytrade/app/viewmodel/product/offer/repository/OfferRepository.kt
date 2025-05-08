@@ -26,7 +26,7 @@ class OfferRepository(
     private val getOffersApi: GetOffersApi,
     private val deleteOfferApi: DeleteOfferApi,
     private val localPrefs: Settings,
-    onlyTradeDB: OnlyTradeDB
+    private val onlyTradeDB: OnlyTradeDB
 ) {
     private val offersLastUpdatedAt = "OFFERS_LAST_UPDATED_AT"
 
@@ -95,21 +95,31 @@ class OfferRepository(
     suspend fun addOffer(
         offerReceiverId: Long, offerReceiverProductId: Long, offeredProductIds: LinkedHashSet<Long>
     ) = loginRepository.jwtToken()?.run {
-        val addOfferRequest = AddOfferRequest(
-            offer = Offer(
-                id = 0,
-                offerMakerId = loginRepository.user()!!.id, // This is guaranteed.
-                offerReceiverId = offerReceiverId,
-                offerReceiverProductId = offerReceiverProductId,
-                offeredProductIds = offeredProductIds,
-                extraPrice = 0.0,
-                accepted = false,
-                completed = false
+        val offerMakerId = loginRepository.user()!!.id // This is guaranteed.
+        getOfferMade(offerMakerId, offerReceiverProductId)?.let { offer ->
+            AddOfferResponse(
+                offer = offer,
+                statusCode = HttpStatusCode.Created.value,
+                error = HttpStatusCode.Created.description
             )
-        )
-        addOfferApi.addOffer(addOfferRequest, jwtToken = this).also {
-            it.offer?.run {
-                addOffer(this)
+        } ?: let {
+            val addOfferRequest = AddOfferRequest(
+                offer = Offer(
+                    id = 0,
+                    offerMakerId = offerMakerId,
+                    offerReceiverId = offerReceiverId,
+                    offerReceiverProductId = offerReceiverProductId,
+                    offeredProductIds = offeredProductIds,
+                    extraPrice = 0.0,
+                    accepted = false,
+                    completed = false,
+                    emptyList()
+                )
+            )
+            addOfferApi.addOffer(addOfferRequest, jwtToken = this).also {
+                it.offer?.run {
+                    addOffer(this)
+                }
             }
         }
     } ?: AddOfferResponse(
@@ -136,11 +146,11 @@ class OfferRepository(
         loginRepository.jwtToken()?.run {
             getOfferMade(offerMakerId, offerReceiverProductId)?.let { offer ->
                 deleteOfferApi.deleteOffer(this, offer.id).also {
-                    it.deletedOfferId?.let { offerId ->
-                        deleteOffer(offerId)
+                    if (it.deletedOfferId != null || it.statusCode == HttpStatusCode.NotFound.value) {
+                        deleteOfferUpdateProduct(offer.id, offerReceiverProductId)
                     }
                 }
-            }
+            } ?: DeleteOfferResponse(HttpStatusCode.OK.value)
 
         } ?: DeleteOfferResponse(
             statusCode = HttpStatusCode.Unauthorized.value,
@@ -179,19 +189,21 @@ class OfferRepository(
     }
 
 
-    private fun getOffersByProductId(productId: Long): List<Offer> =
-        //todo maybe add remote fetch as well (very rare case as products would come with offers always when fetched from remote.
-        offerDao.getOffersByProductId(productId).executeAsList()
-            .map { toOffer(it, getProductsByIds(Json.decodeFromString(it.offeredProductIds))) }
-
-
     private fun getProductsByIds(ids: Set<Long>) =
-        productDao.getProductsByIds(ids).executeAsList()
-            .map { toProduct(it, getOffersByProductId(it.id)) }
+        productDao.getProductsByIds(ids).executeAsList().map(::toProduct)
 
     private fun deleteOffer(offerId: Long) = offerDao.transaction {
         offerDao.deleteById(offerId)
     }
+
+    private fun deleteOfferUpdateProduct(offerId: Long, offerReceiverProductId: Long) =
+        onlyTradeDB.transaction {
+            offerDao.deleteById(offerId)
+            val product = productDao.getById(offerReceiverProductId).executeAsOne()
+            val offers = product.offers?.run { Json.decodeFromString<List<Offer>>(this) }
+                ?.filterNot { it.id == offerId }?.run { Json.encodeToString(this) }
+            productDao.updateOffers(offers, offerReceiverProductId)
+        }
 
 
 }

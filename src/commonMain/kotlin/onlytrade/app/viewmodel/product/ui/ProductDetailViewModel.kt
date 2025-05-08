@@ -4,8 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import onlytrade.app.IODispatcher
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
 import onlytrade.app.viewmodel.product.offer.ui.usecase.WithdrawOfferUseCase
@@ -20,7 +18,6 @@ import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MakingOffer
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferDeleteApiError
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferDeleted
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferMade
-import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferNotFound
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferNotMade
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferNotReceived
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferReceived
@@ -51,13 +48,10 @@ class ProductDetailViewModel(
             return
         }
 
-
-        uiState.value = if (isMyProduct(product.userId).not()) {
+        if (isMyProduct(product.userId).not()) {
             getOfferMade(product.id)
-            LoadingOfferReceived
         } else {
             getOfferReceived(product.id)
-            LoadingOfferMade
         }
     }
 
@@ -71,7 +65,7 @@ class ProductDetailViewModel(
                     offerReceiverProductId = offerReceiverProductId
                 )) {
                 WithdrawOfferUseCase.Result.OfferDeleted -> OfferDeleted
-                WithdrawOfferUseCase.Result.OfferNotFound -> OfferNotFound
+                WithdrawOfferUseCase.Result.OfferNotFound -> OfferDeleted
                 is WithdrawOfferUseCase.Result.Error -> OfferDeleteApiError(result.error)
             }
         }
@@ -80,13 +74,13 @@ class ProductDetailViewModel(
 
     private fun getOfferMade(offerReceiverProductId: Long) {
 
+        uiState.value = LoadingOfferMade
+
         viewModelScope.launch {
-            withContext(IODispatcher) {
-                offerRepository.getOfferMade(
-                    offerMakerId = user!!.id,
-                    offerReceiverProductId
-                )
-            }.let { offer ->
+            offerRepository.getOfferMade(
+                offerMakerId = user!!.id,
+                offerReceiverProductId
+            ).let { offer ->
                 uiState.value =
                     if (offer == null) OfferNotMade else OfferMade(offer = offer)
             }
@@ -95,13 +89,13 @@ class ProductDetailViewModel(
 
     private fun getOfferReceived(offerReceiverProductId: Long) {
 
+        uiState.value = LoadingOfferReceived
+
         viewModelScope.launch {
-            withContext(IODispatcher) {
-                offerRepository.getOfferReceived(
-                    offerReceiverId = user!!.id,
-                    offerReceiverProductId
-                )
-            }.let { offer ->
+            offerRepository.getOfferReceived(
+                offerReceiverId = user!!.id,
+                offerReceiverProductId
+            ).let { offer ->
                 uiState.value =
                     if (offer == null) OfferNotReceived else OfferReceived
             }
@@ -109,8 +103,9 @@ class ProductDetailViewModel(
     }
 
     fun makeOffer(productId: Long, offerReceiverId: Long, offeredProductIds: LinkedHashSet<Long>) {
-        uiState.value = MakingOffer
+
         viewModelScope.launch {
+            uiState.value = MakingOffer
             uiState.value = when (val result = offerUseCase(
                 offerReceiverId = offerReceiverId,
                 offerReceiverProductId = productId,

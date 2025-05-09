@@ -16,9 +16,16 @@ class GetOffersMadeUseCase(
             offerRepository.getOffers()
                 .run {
                     when (statusCode) {
-                        HttpStatusCode.OK.value -> Result.Offers(offers = offers!!.filter {
-                            it.offerMakerId == loginRepository.user()?.id
-                        }) //guaranteed non-null products.
+                        HttpStatusCode.OK.value -> {
+                            val offerList = offers!!.filter {
+                                it.offerMakerId == loginRepository.user()?.id
+                            }
+                            if (offerList.isEmpty())
+                                Result.OffersNotFound
+                            else
+                                Result.Offers(offers = offerList) //guaranteed non-null products.
+                        }
+
                         HttpStatusCode.NotFound.value -> Result.OffersNotFound // all products loaded or no products at all.
                         else -> Result.Error(
                             error = error ?: "Something went wrong."

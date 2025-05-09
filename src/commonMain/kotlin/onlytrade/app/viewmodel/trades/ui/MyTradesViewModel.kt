@@ -6,16 +6,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import onlytrade.app.viewmodel.product.offer.ui.usecase.GetOffersMadeUseCase
 import onlytrade.app.viewmodel.product.offer.ui.usecase.GetOffersReceivedUseCase
-import onlytrade.app.viewmodel.product.offer.ui.usecase.RejectOfferUseCase
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.Idle
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.LoadingOffersMade
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.LoadingOffersReceived
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.NoOffersMade
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.NoOffersReceived
-import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.OfferDeleteApiError
-import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.OfferDeleted
-import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.OfferNotFound
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.OffersMade
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.OffersMadeError
 import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.OffersReceived
@@ -23,8 +19,7 @@ import onlytrade.app.viewmodel.trades.ui.state.MyTradesUiState.OffersReceivedErr
 
 class MyTradesViewModel(
     private val getOffersMadeUseCase: GetOffersMadeUseCase,
-    private val getOffersReceivedUseCase: GetOffersReceivedUseCase,
-    private val rejectOfferUseCase: RejectOfferUseCase
+    private val getOffersReceivedUseCase: GetOffersReceivedUseCase
 ) : ViewModel() {
 
     var uiState: MutableStateFlow<MyTradesUiState> = MutableStateFlow(Idle)
@@ -42,20 +37,11 @@ class MyTradesViewModel(
         uiState.value = LoadingOffersMade
 
         viewModelScope.launch {
-            when (val result =
+            uiState.value = when (val result =
                 getOffersMadeUseCase()) {
-                is GetOffersMadeUseCase.Result.Offers -> {
-                    uiState.value = OffersMade(result.offers)
-                }
-
-
-                GetOffersMadeUseCase.Result.OffersNotFound -> {
-                    uiState.value = NoOffersMade
-                }
-
-                is GetOffersMadeUseCase.Result.Error -> {
-                    uiState.value = OffersMadeError(error = result.error)
-                }
+                is GetOffersMadeUseCase.Result.Offers -> OffersMade(result.offers)
+                GetOffersMadeUseCase.Result.OffersNotFound -> NoOffersMade
+                is GetOffersMadeUseCase.Result.Error -> OffersMadeError(error = result.error)
 
             }
         }
@@ -65,32 +51,11 @@ class MyTradesViewModel(
         uiState.value = LoadingOffersReceived
 
         viewModelScope.launch {
-            when (val result =
+            uiState.value = when (val result =
                 getOffersReceivedUseCase()) {
-                is GetOffersReceivedUseCase.Result.Offers -> {
-                    uiState.value = OffersReceived(result.offers)
-                }
-
-
-                GetOffersReceivedUseCase.Result.OffersNotFound -> {
-                    uiState.value = NoOffersReceived
-                }
-
-                is GetOffersReceivedUseCase.Result.Error -> {
-                    uiState.value = OffersReceivedError(error = result.error)
-                }
-
-            }
-        }
-    }
-
-    //todo impl
-    fun rejectOffer(offerId: Long) {
-        viewModelScope.launch {
-            uiState.value = when (val result = rejectOfferUseCase(offerId)) {
-                RejectOfferUseCase.Result.OfferDeleted -> OfferDeleted
-                RejectOfferUseCase.Result.OfferNotFound -> OfferNotFound
-                is RejectOfferUseCase.Result.Error -> OfferDeleteApiError(result.error)
+                is GetOffersReceivedUseCase.Result.Offers -> OffersReceived(result.offers)
+                GetOffersReceivedUseCase.Result.OffersNotFound -> NoOffersReceived
+                is GetOffersReceivedUseCase.Result.Error -> OffersReceivedError(error = result.error)
             }
         }
     }

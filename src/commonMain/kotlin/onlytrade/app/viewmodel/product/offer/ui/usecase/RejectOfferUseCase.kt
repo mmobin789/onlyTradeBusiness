@@ -8,9 +8,9 @@ import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
 class RejectOfferUseCase(
     private val offerRepository: OfferRepository
 ) {
-    suspend operator fun invoke(offerId: Long) =
+    suspend operator fun invoke(offerId: Long, offerReceiverProductId: Long) =
         withContext(IODispatcher) {
-            offerRepository.rejectOffer(offerId)
+            offerRepository.rejectOffer(offerId, offerReceiverProductId)
                 .run {
                     when (statusCode) {
                         HttpStatusCode.OK.value -> Result.OfferDeleted

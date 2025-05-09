@@ -17,7 +17,6 @@ import onlytrade.app.viewmodel.product.offer.repository.data.remote.request.AddO
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.AddOfferResponse
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.DeleteOfferResponse
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.GetOffersResponse
-import onlytrade.app.viewmodel.product.repository.data.ProductMapper.toProduct
 import onlytrade.db.OnlyTradeDB
 
 class OfferRepository(
@@ -59,12 +58,7 @@ class OfferRepository(
             getOffersApi()
         } else {
             val localOffers = offerDao.transactionWithResult {
-                offerDao.getOffers().executeAsList().map {
-                    toOffer(
-                        it,
-                        getProductsByIds(Json.decodeFromString(it.offeredProductIds))
-                    )
-                }
+                offerDao.getOffers().executeAsList().map(::toOffer)
             }
             if (localOffers.isEmpty()) {
                 getOffersApi()
@@ -79,7 +73,7 @@ class OfferRepository(
     fun getOfferMade(offerMakerId: Long, offerReceiverProductId: Long) =
         offerDao.transactionWithResult {
             offerDao.getOfferMade(offerMakerId, offerReceiverProductId).executeAsOneOrNull()
-                ?.run { toOffer(this, getProductsByIds(Json.decodeFromString(offeredProductIds))) }
+                ?.run(::toOffer)
         }
 
     /**
@@ -89,7 +83,7 @@ class OfferRepository(
     fun getOfferReceived(offerReceiverId: Long, offerReceiverProductId: Long) =
         offerDao.transactionWithResult {
             offerDao.getOfferReceived(offerReceiverId, offerReceiverProductId).executeAsOneOrNull()
-                ?.run { toOffer(this, getProductsByIds(Json.decodeFromString(offeredProductIds))) }
+                ?.run(::toOffer)
         }
 
     suspend fun addOffer(
@@ -104,17 +98,10 @@ class OfferRepository(
             )
         } ?: let {
             val addOfferRequest = AddOfferRequest(
-                offer = Offer(
-                    id = 0,
-                    offerMakerId = offerMakerId,
-                    offerReceiverId = offerReceiverId,
-                    offerReceiverProductId = offerReceiverProductId,
-                    offeredProductIds = offeredProductIds,
-                    extraPrice = 0.0,
-                    accepted = false,
-                    completed = false,
-                    emptyList()
-                )
+                offeredProductIds = offeredProductIds,
+                offerMakerId = offerMakerId,
+                offerReceiverId = offerReceiverId,
+                offerReceiverProductId = offerReceiverProductId,
             )
             addOfferApi.addOffer(addOfferRequest, jwtToken = this).also {
                 it.offer?.run {
@@ -157,18 +144,20 @@ class OfferRepository(
             error = HttpStatusCode.Unauthorized.description
         )
 
-    suspend fun rejectOffer(offerId: Long) =
-        loginRepository.jwtToken()?.run {
-            deleteOfferApi.deleteOffer(this, offerId).also {
-                it.deletedOfferId?.let { offerId ->
-                    deleteOffer(offerId)
+    suspend fun rejectOffer(offerId: Long, offerReceiverProductId: Long) =
+        offerDao.transactionWithResult { offerDao.getById(offerId).executeAsOneOrNull() }?.run {
+            loginRepository.jwtToken()?.run {
+                deleteOfferApi.deleteOffer(this, offerId).also {
+                    it.deletedOfferId?.let { offerId ->
+                        deleteOfferUpdateProduct(offerId, offerReceiverProductId)
+                    }
                 }
-            }
+            } ?: DeleteOfferResponse(
+                statusCode = HttpStatusCode.Unauthorized.value,
+                error = HttpStatusCode.Unauthorized.description
+            )
 
-        } ?: DeleteOfferResponse(
-            statusCode = HttpStatusCode.Unauthorized.value,
-            error = HttpStatusCode.Unauthorized.description
-        )
+        } ?: DeleteOfferResponse(HttpStatusCode.OK.value)
 
 
     private fun addOffers(offers: List<Offer>) = offerDao.transaction {
@@ -188,13 +177,6 @@ class OfferRepository(
         }
     }
 
-
-    private fun getProductsByIds(ids: Set<Long>) =
-        productDao.getProductsByIds(ids).executeAsList().map(::toProduct)
-
-    private fun deleteOffer(offerId: Long) = offerDao.transaction {
-        offerDao.deleteById(offerId)
-    }
 
     private fun deleteOfferUpdateProduct(offerId: Long, offerReceiverProductId: Long) =
         onlyTradeDB.transaction {

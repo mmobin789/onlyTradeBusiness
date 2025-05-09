@@ -16,6 +16,10 @@ INSERT OR REPLACE INTO Offer(id,offerMakerId,offerReceiverId, offerReceiverProdu
 VALUES (?, ?,?,?,? ,?,?,?);
 
 
+getById:
+SELECT * FROM Offer
+WHERE id = ?;
+
 getOffers:
 SELECT * FROM Offer;
 
@@ -27,9 +31,10 @@ getOfferReceived:
 SELECT * FROM Offer
 WHERE offerReceiverId = ? AND offerReceiverProductId = ?;
 
-getOffersByProductId:
-SELECT * FROM Offer
-WHERE offerReceiverProductId = ?;
+accept:
+UPDATE Offer
+SET accepted = ?
+WHERE id = ?;
 
 deleteById:
 DELETE FROM Offer

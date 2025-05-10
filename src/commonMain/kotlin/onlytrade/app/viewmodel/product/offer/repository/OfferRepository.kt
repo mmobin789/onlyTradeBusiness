@@ -10,10 +10,12 @@ import kotlinx.serialization.json.Json
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.data.OfferMapper.toOffer
 import onlytrade.app.viewmodel.product.offer.repository.data.db.Offer
+import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.AcceptOfferApi
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.AddOfferApi
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.DeleteOfferApi
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.GetOffersApi
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.request.AddOfferRequest
+import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.AcceptOfferResponse
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.AddOfferResponse
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.DeleteOfferResponse
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.response.GetOffersResponse
@@ -24,6 +26,7 @@ class OfferRepository(
     private val addOfferApi: AddOfferApi,
     private val getOffersApi: GetOffersApi,
     private val deleteOfferApi: DeleteOfferApi,
+    private val acceptOfferApi: AcceptOfferApi,
     private val localPrefs: Settings,
     private val onlyTradeDB: OnlyTradeDB
 ) {
@@ -158,6 +161,22 @@ class OfferRepository(
             )
 
         } ?: DeleteOfferResponse(HttpStatusCode.OK.value)
+
+    suspend fun acceptOffer(offer: Offer) =
+        offerDao.transactionWithResult { offerDao.getById(offer.id).executeAsOneOrNull() }?.run {
+            loginRepository.jwtToken()?.run {
+                if (accepted.not())
+                    acceptOfferApi.acceptOffer(jwtToken = this, offer.id).also {
+                        it.acceptedOfferId?.let {
+                            addOffer(offer.copy(accepted = true))
+                        }
+                    } else AcceptOfferResponse(HttpStatusCode.Accepted.value)
+            } ?: AcceptOfferResponse(
+                statusCode = HttpStatusCode.Unauthorized.value,
+                error = HttpStatusCode.Unauthorized.description
+            )
+
+        } ?: AcceptOfferResponse(HttpStatusCode.Accepted.value)
 
 
     private fun addOffers(offers: List<Offer>) = offerDao.transaction {

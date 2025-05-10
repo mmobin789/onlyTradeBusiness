@@ -75,7 +75,7 @@ class TradeDetailViewModel(
         uiState.value = AcceptingOffer
         AppScope.launch {
             uiState.value = when (val result =
-                acceptOfferUseCase(offer.id, offer.offerReceiverProductId)) {
+                acceptOfferUseCase(offer)) {
                 AcceptOfferUseCase.Result.OfferAccepted -> OfferAccepted
                 AcceptOfferUseCase.Result.OfferNotFound -> OfferAccepted
                 is AcceptOfferUseCase.Result.Error -> OfferAcceptApiError(result.error)

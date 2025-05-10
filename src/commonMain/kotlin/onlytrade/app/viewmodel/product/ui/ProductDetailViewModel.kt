@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import onlytrade.app.component.AppScope
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
 import onlytrade.app.viewmodel.product.offer.ui.usecase.WithdrawOfferUseCase
@@ -58,7 +59,7 @@ class ProductDetailViewModel(
 
     fun withdrawOffer(offerReceiverProductId: Long) {
         uiState.value = WithdrawingOffer
-        viewModelScope.launch {
+        AppScope.launch {
             uiState.value = when (val result =
                 withdrawOfferUseCase(
                     offerMakerId = user!!.id,
@@ -104,7 +105,7 @@ class ProductDetailViewModel(
 
     fun makeOffer(productId: Long, offerReceiverId: Long, offeredProductIds: LinkedHashSet<Long>) {
 
-        viewModelScope.launch {
+        AppScope.launch {
             uiState.value = MakingOffer
             uiState.value = when (val result = offerUseCase(
                 offerReceiverId = offerReceiverId,

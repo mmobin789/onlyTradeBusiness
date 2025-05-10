@@ -4,15 +4,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import onlytrade.app.component.AppScope
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
 import onlytrade.app.viewmodel.product.offer.repository.data.db.Offer
+import onlytrade.app.viewmodel.product.offer.ui.usecase.AcceptOfferUseCase
 import onlytrade.app.viewmodel.product.offer.ui.usecase.RejectOfferUseCase
 import onlytrade.app.viewmodel.product.offer.ui.usecase.WithdrawOfferUseCase
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState
+import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.AcceptingOffer
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.Idle
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.LoadingOfferMade
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.LoadingOfferReceived
+import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferAcceptApiError
+import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferAccepted
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferDeleteApiError
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferMade
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferNotMade
@@ -26,6 +31,7 @@ import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.WithdrawingOff
 class TradeDetailViewModel(
     private val withdrawOfferUseCase: WithdrawOfferUseCase,
     private val rejectOfferUseCase: RejectOfferUseCase,
+    private val acceptOfferUseCase: AcceptOfferUseCase,
     loginRepository: LoginRepository,
     private val offerRepository: OfferRepository
 ) : ViewModel() {
@@ -52,7 +58,7 @@ class TradeDetailViewModel(
 
     fun withdrawOffer(offerReceiverProductId: Long) {
         uiState.value = WithdrawingOffer
-        viewModelScope.launch {
+        AppScope.launch {
             uiState.value = when (val result =
                 withdrawOfferUseCase(
                     offerMakerId = user!!.id,
@@ -66,12 +72,20 @@ class TradeDetailViewModel(
     }
 
     fun acceptOffer(offer: Offer) {
-        //todo
+        uiState.value = AcceptingOffer
+        AppScope.launch {
+            uiState.value = when (val result =
+                acceptOfferUseCase(offer.id, offer.offerReceiverProductId)) {
+                AcceptOfferUseCase.Result.OfferAccepted -> OfferAccepted
+                AcceptOfferUseCase.Result.OfferNotFound -> OfferAccepted
+                is AcceptOfferUseCase.Result.Error -> OfferAcceptApiError(result.error)
+            }
+        }
     }
 
     fun rejectOffer(offer: Offer) {
         uiState.value = RejectingOffer
-        viewModelScope.launch {
+        AppScope.launch {
             uiState.value = when (val result =
                 rejectOfferUseCase(offer.id, offer.offerReceiverProductId)) {
                 RejectOfferUseCase.Result.OfferDeleted -> OfferRejected

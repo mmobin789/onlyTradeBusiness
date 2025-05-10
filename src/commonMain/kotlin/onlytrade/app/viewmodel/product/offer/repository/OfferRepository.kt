@@ -92,7 +92,7 @@ class OfferRepository(
                 ?.run(::toOffer)
         }
 
-    fun getOfferAccepted(offerId: Long) = offerDao.transactionWithResult {
+    private fun getOfferAccepted(offerId: Long) = offerDao.transactionWithResult {
         offerDao.getOfferAccepted(offerId, true).executeAsOneOrNull()
             ?.run(::toOffer)
     }

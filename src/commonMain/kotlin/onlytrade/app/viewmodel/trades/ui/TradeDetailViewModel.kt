@@ -4,8 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import onlytrade.app.IODispatcher
 import onlytrade.app.component.AppScope
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
@@ -61,17 +59,6 @@ class TradeDetailViewModel(
             getOfferReceived(offer.offerReceiverProductId)
         }
     }
-
-    fun checkOfferAccepted(offerId: Long) {
-        viewModelScope.launch {
-            uiState.value =
-                withContext(IODispatcher) { offerRepository.getOfferAccepted(offerId) }?.let {
-                    OfferAccepted
-                } ?: OfferRejected
-
-        }
-    }
-
 
     fun withdrawOffer(offerReceiverProductId: Long) {
         uiState.value = WithdrawingOffer

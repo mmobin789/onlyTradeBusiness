@@ -18,4 +18,7 @@ sealed class TradeDetailUiState {
     data object OfferAccepted : TradeDetailUiState()
     data class OfferDeleteApiError(val error: String) : TradeDetailUiState()
     data class OfferAcceptApiError(val error: String) : TradeDetailUiState()
+    data object CompletingOffer : TradeDetailUiState()
+    data object OfferCompleted : TradeDetailUiState()
+    data class OfferCompleteApiError(val error: String) : TradeDetailUiState()
 }

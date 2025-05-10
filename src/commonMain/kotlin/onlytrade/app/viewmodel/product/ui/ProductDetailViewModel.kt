@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import onlytrade.app.IODispatcher
 import onlytrade.app.component.AppScope
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
@@ -78,10 +80,12 @@ class ProductDetailViewModel(
         uiState.value = LoadingOfferMade
 
         viewModelScope.launch {
-            offerRepository.getOfferMade(
-                offerMakerId = user!!.id,
-                offerReceiverProductId
-            ).let { offer ->
+            withContext(IODispatcher) {
+                offerRepository.getOfferMade(
+                    offerMakerId = user!!.id,
+                    offerReceiverProductId
+                )
+            }.let { offer ->
                 uiState.value =
                     if (offer == null) OfferNotMade else OfferMade(offer = offer)
             }
@@ -93,10 +97,12 @@ class ProductDetailViewModel(
         uiState.value = LoadingOfferReceived
 
         viewModelScope.launch {
-            offerRepository.getOfferReceived(
-                offerReceiverId = user!!.id,
-                offerReceiverProductId
-            ).let { offer ->
+            withContext(IODispatcher) {
+                offerRepository.getOfferReceived(
+                    offerReceiverId = user!!.id,
+                    offerReceiverProductId
+                )
+            }.let { offer ->
                 uiState.value =
                     if (offer == null) OfferNotReceived else OfferReceived
             }

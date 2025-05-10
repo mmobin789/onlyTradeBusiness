@@ -4,20 +4,26 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import onlytrade.app.IODispatcher
 import onlytrade.app.component.AppScope
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
 import onlytrade.app.viewmodel.product.offer.repository.data.db.Offer
 import onlytrade.app.viewmodel.product.offer.ui.usecase.AcceptOfferUseCase
+import onlytrade.app.viewmodel.product.offer.ui.usecase.CompleteOfferUseCase
 import onlytrade.app.viewmodel.product.offer.ui.usecase.RejectOfferUseCase
 import onlytrade.app.viewmodel.product.offer.ui.usecase.WithdrawOfferUseCase
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.AcceptingOffer
+import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.CompletingOffer
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.Idle
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.LoadingOfferMade
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.LoadingOfferReceived
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferAcceptApiError
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferAccepted
+import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferCompleteApiError
+import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferCompleted
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferDeleteApiError
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferMade
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferNotMade
@@ -32,6 +38,7 @@ class TradeDetailViewModel(
     private val withdrawOfferUseCase: WithdrawOfferUseCase,
     private val rejectOfferUseCase: RejectOfferUseCase,
     private val acceptOfferUseCase: AcceptOfferUseCase,
+    private val completeOfferUseCase: CompleteOfferUseCase,
     loginRepository: LoginRepository,
     private val offerRepository: OfferRepository
 ) : ViewModel() {
@@ -52,6 +59,16 @@ class TradeDetailViewModel(
             getOfferMade(offer.offerReceiverProductId)
         } else {
             getOfferReceived(offer.offerReceiverProductId)
+        }
+    }
+
+    fun checkOfferAccepted(offerId: Long) {
+        viewModelScope.launch {
+            uiState.value =
+                withContext(IODispatcher) { offerRepository.getOfferAccepted(offerId) }?.let {
+                    OfferAccepted
+                } ?: OfferRejected
+
         }
     }
 
@@ -91,6 +108,18 @@ class TradeDetailViewModel(
                 RejectOfferUseCase.Result.OfferDeleted -> OfferRejected
                 RejectOfferUseCase.Result.OfferNotFound -> OfferRejected
                 is RejectOfferUseCase.Result.Error -> OfferDeleteApiError(result.error)
+            }
+        }
+    }
+
+    fun completeOffer(offer: Offer) {
+        uiState.value = CompletingOffer
+        AppScope.launch {
+            uiState.value = when (val result =
+                completeOfferUseCase(offer)) {
+                CompleteOfferUseCase.Result.OfferCompleted -> OfferCompleted
+                CompleteOfferUseCase.Result.OfferNotFound -> OfferAccepted
+                is CompleteOfferUseCase.Result.Error -> OfferCompleteApiError(result.error)
             }
         }
     }

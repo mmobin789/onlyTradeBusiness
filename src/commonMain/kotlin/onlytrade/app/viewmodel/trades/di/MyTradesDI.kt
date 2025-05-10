@@ -1,7 +1,10 @@
 package onlytrade.app.viewmodel.trades.di
 
+import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.AcceptOfferApi
+import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.CompleteOfferApi
 import onlytrade.app.viewmodel.product.offer.repository.data.remote.api.GetOffersApi
 import onlytrade.app.viewmodel.product.offer.ui.usecase.AcceptOfferUseCase
+import onlytrade.app.viewmodel.product.offer.ui.usecase.CompleteOfferUseCase
 import onlytrade.app.viewmodel.product.offer.ui.usecase.GetOffersMadeUseCase
 import onlytrade.app.viewmodel.product.offer.ui.usecase.GetOffersReceivedUseCase
 import onlytrade.app.viewmodel.product.offer.ui.usecase.RejectOfferUseCase
@@ -19,5 +22,8 @@ val myTradesModule = module {
     factoryOf(::GetOffersReceivedUseCase)
     factoryOf(::RejectOfferUseCase)
     factoryOf(::AcceptOfferUseCase)
+    factoryOf(::CompleteOfferUseCase)
     factoryOf(::GetOffersApi)
+    factoryOf(::AcceptOfferApi)
+    factoryOf(::CompleteOfferApi)
 }

@@ -31,9 +31,22 @@ getOfferReceived:
 SELECT * FROM Offer
 WHERE offerReceiverId = ? AND offerReceiverProductId = ?;
 
+getOfferAccepted:
+SELECT * FROM Offer
+WHERE id = ? AND accepted = ?;
+
+getOfferCompleted:
+SELECT * FROM Offer
+WHERE id = ? AND completed = ?;
+
 accept:
 UPDATE Offer
 SET accepted = ?
+WHERE id = ?;
+
+complete:
+UPDATE Offer
+SET completed = ?
 WHERE id = ?;
 
 deleteById:

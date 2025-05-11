@@ -34,7 +34,7 @@ WHERE offerReceiverId = ? AND offerReceiverProductId = ?;
 
 getOfferAccepted:
 SELECT * FROM Offer
-WHERE id = ? AND accepted = ?;
+WHERE id = ? AND accepted = ? AND completed = ?;
 
 getOfferCompleted:
 SELECT * FROM Offer

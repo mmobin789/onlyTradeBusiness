@@ -166,7 +166,7 @@ class OfferRepository(
                 deleteOfferApi.deleteOffer(jwtToken = jwtToken, offer.id).also {
                     it.deletedOfferId?.let { offerId ->
                         deleteOfferUpdateProduct(offerId, offerReceiverProductId)
-                    }
+                    } ?: deleteOffer(offer.id)
                 }
             } ?: DeleteOfferResponse(HttpStatusCode.OK.value)
 
@@ -181,7 +181,7 @@ class OfferRepository(
                 acceptOfferApi.acceptOffer(jwtToken = jwtToken, offer.id).also {
                     it.acceptedOfferId?.let { acceptedOfferId ->
                         offerDao.transaction { offerDao.accept(true, acceptedOfferId) }
-                    }
+                    } ?: deleteOffer(offer.id)
                 } else AcceptOfferResponse(HttpStatusCode.Accepted.value)
         } ?: AcceptOfferResponse(HttpStatusCode.NotFound.value)
 
@@ -196,7 +196,8 @@ class OfferRepository(
                 completeOfferApi.completeOffer(jwtToken, offer.id).also {
                     it.completedOfferId?.let { completedOfferId ->
                         offerDao.transaction { offerDao.complete(true, completedOfferId) }
-                    }
+                    } ?: deleteOffer(offer.id)
+
                 } else CompleteOfferResponse(HttpStatusCode.Accepted.value)
         } ?: CompleteOfferResponse(HttpStatusCode.NotFound.value)
 
@@ -233,5 +234,7 @@ class OfferRepository(
             productDao.updateOffers(offers, offerReceiverProductId)
         }
 
-
+    private fun deleteOffer(offerId: Long) = offerDao.transaction {
+        offerDao.deleteById(offerId)
+    }
 }

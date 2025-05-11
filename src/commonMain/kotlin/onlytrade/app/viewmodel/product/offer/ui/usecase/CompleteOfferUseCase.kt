@@ -15,6 +15,7 @@ class CompleteOfferUseCase(
                 .run {
                     when (statusCode) {
                         HttpStatusCode.Accepted.value -> Result.OfferCompleted
+                        HttpStatusCode.NotFound.value -> Result.OfferNotFound
                         else -> Result.Error(
                             error = error ?: "Something went wrong."
                         ) // something went wrong would be a rare unhandled/unexpected find.
@@ -24,6 +25,7 @@ class CompleteOfferUseCase(
 
     sealed class Result {
         data object OfferCompleted : Result()
+        data object OfferNotFound : Result()
         data class Error(val error: String) : Result()
     }
 }

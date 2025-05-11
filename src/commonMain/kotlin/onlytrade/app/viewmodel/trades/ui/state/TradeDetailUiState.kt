@@ -13,7 +13,7 @@ sealed class TradeDetailUiState {
     data object WithdrawingOffer : TradeDetailUiState()
     data object RejectingOffer : TradeDetailUiState()
     data object AcceptingOffer : TradeDetailUiState()
-    data object OfferWithdrawn : TradeDetailUiState()
+    data object OfferDeleted : TradeDetailUiState()
     data object OfferRejected : TradeDetailUiState()
     data object OfferAccepted : TradeDetailUiState()
     data class OfferDeleteApiError(val error: String) : TradeDetailUiState()

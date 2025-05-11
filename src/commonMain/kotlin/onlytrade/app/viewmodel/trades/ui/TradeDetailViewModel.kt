@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import onlytrade.app.IODispatcher
 import onlytrade.app.component.AppScope
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
@@ -60,14 +62,23 @@ class TradeDetailViewModel(
         }
     }
 
+    fun checkOfferAccepted(offerId: Long) {
+        viewModelScope.launch {
+            uiState.value =
+                withContext(IODispatcher) { offerRepository.getOfferAccepted(offerId) }?.let {
+                    OfferAccepted
+                } ?: Idle
+
+        }
+    }
+
+
     fun withdrawOffer(offerReceiverProductId: Long) {
         uiState.value = WithdrawingOffer
         AppScope.launch {
-            uiState.value = when (val result =
-                withdrawOfferUseCase(
-                    offerMakerId = user!!.id,
-                    offerReceiverProductId = offerReceiverProductId
-                )) {
+            uiState.value = when (val result = withdrawOfferUseCase(
+                offerMakerId = user!!.id, offerReceiverProductId = offerReceiverProductId
+            )) {
                 WithdrawOfferUseCase.Result.OfferDeleted -> OfferWithdrawn
                 WithdrawOfferUseCase.Result.OfferNotFound -> OfferWithdrawn
                 is WithdrawOfferUseCase.Result.Error -> OfferDeleteApiError(result.error)
@@ -78,10 +89,8 @@ class TradeDetailViewModel(
     fun acceptOffer(offer: Offer) {
         uiState.value = AcceptingOffer
         AppScope.launch {
-            uiState.value = when (val result =
-                acceptOfferUseCase(offer)) {
+            uiState.value = when (val result = acceptOfferUseCase(offer)) {
                 AcceptOfferUseCase.Result.OfferAccepted -> OfferAccepted
-                AcceptOfferUseCase.Result.OfferNotFound -> OfferAccepted
                 is AcceptOfferUseCase.Result.Error -> OfferAcceptApiError(result.error)
             }
         }
@@ -90,22 +99,19 @@ class TradeDetailViewModel(
     fun rejectOffer(offer: Offer) {
         uiState.value = RejectingOffer
         AppScope.launch {
-            uiState.value = when (val result =
-                rejectOfferUseCase(offer.id, offer.offerReceiverProductId)) {
-                RejectOfferUseCase.Result.OfferDeleted -> OfferRejected
-                RejectOfferUseCase.Result.OfferNotFound -> OfferRejected
-                is RejectOfferUseCase.Result.Error -> OfferDeleteApiError(result.error)
-            }
+            uiState.value =
+                when (val result = rejectOfferUseCase(offer)) {
+                    RejectOfferUseCase.Result.OfferDeleted -> OfferRejected
+                    is RejectOfferUseCase.Result.Error -> OfferDeleteApiError(result.error)
+                }
         }
     }
 
     fun completeOffer(offer: Offer) {
         uiState.value = CompletingOffer
         AppScope.launch {
-            uiState.value = when (val result =
-                completeOfferUseCase(offer)) {
+            uiState.value = when (val result = completeOfferUseCase(offer)) {
                 CompleteOfferUseCase.Result.OfferCompleted -> OfferCompleted
-                CompleteOfferUseCase.Result.OfferNotFound -> OfferAccepted
                 is CompleteOfferUseCase.Result.Error -> OfferCompleteApiError(result.error)
             }
         }
@@ -118,11 +124,9 @@ class TradeDetailViewModel(
 
         viewModelScope.launch {
             offerRepository.getOfferMade(
-                offerMakerId = user!!.id,
-                offerReceiverProductId
+                offerMakerId = user!!.id, offerReceiverProductId
             ).let { offer ->
-                uiState.value =
-                    if (offer == null) OfferNotMade else OfferMade(offer = offer)
+                uiState.value = if (offer == null) OfferNotMade else OfferMade(offer = offer)
             }
         }
     }
@@ -133,11 +137,9 @@ class TradeDetailViewModel(
 
         viewModelScope.launch {
             offerRepository.getOfferReceived(
-                offerReceiverId = user!!.id,
-                offerReceiverProductId
+                offerReceiverId = user!!.id, offerReceiverProductId
             ).let { offer ->
-                uiState.value =
-                    if (offer == null) OfferNotReceived else OfferReceived
+                uiState.value = if (offer == null) OfferNotReceived else OfferReceived
             }
         }
     }

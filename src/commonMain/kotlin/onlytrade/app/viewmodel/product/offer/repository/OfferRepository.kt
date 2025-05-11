@@ -92,7 +92,7 @@ class OfferRepository(
                 ?.run(::toOffer)
         }
 
-    private fun getOfferAccepted(offerId: Long) = offerDao.transactionWithResult {
+    fun getOfferAccepted(offerId: Long) = offerDao.transactionWithResult {
         offerDao.getOfferAccepted(offerId, true).executeAsOneOrNull()
             ?.run(::toOffer)
     }
@@ -104,7 +104,7 @@ class OfferRepository(
 
     suspend fun addOffer(
         offerReceiverId: Long, offerReceiverProductId: Long, offeredProductIds: LinkedHashSet<Long>
-    ) = loginRepository.jwtToken()?.run {
+    ) = loginRepository.jwtToken()?.let { jwtToken ->
         val offerMakerId = loginRepository.user()!!.id // This is guaranteed.
         getOfferMade(offerMakerId, offerReceiverProductId)?.let { offer ->
             AddOfferResponse(
@@ -119,7 +119,7 @@ class OfferRepository(
                 offerReceiverId = offerReceiverId,
                 offerReceiverProductId = offerReceiverProductId,
             )
-            addOfferApi.addOffer(addOfferRequest, jwtToken = this).also {
+            addOfferApi.addOffer(addOfferRequest, jwtToken).also {
                 it.offer?.run {
                     addOffer(this)
                 }
@@ -146,9 +146,9 @@ class OfferRepository(
     }
 
     suspend fun withdrawOffer(offerMakerId: Long, offerReceiverProductId: Long) =
-        loginRepository.jwtToken()?.run {
+        loginRepository.jwtToken()?.let { jwtToken ->
             getOfferMade(offerMakerId, offerReceiverProductId)?.let { offer ->
-                deleteOfferApi.deleteOffer(this, offer.id).also {
+                deleteOfferApi.deleteOffer(jwtToken, offer.id).also {
                     if (it.deletedOfferId != null || it.statusCode == HttpStatusCode.NotFound.value) {
                         deleteOfferUpdateProduct(offer.id, offerReceiverProductId)
                     }
@@ -160,52 +160,50 @@ class OfferRepository(
             error = HttpStatusCode.Unauthorized.description
         )
 
-    suspend fun rejectOffer(offerId: Long, offerReceiverProductId: Long) =
-        offerDao.transactionWithResult { offerDao.getById(offerId).executeAsOneOrNull() }?.run {
-            loginRepository.jwtToken()?.run {
-                deleteOfferApi.deleteOffer(this, offerId).also {
+    suspend fun rejectOffer(offer: Offer) =
+        loginRepository.jwtToken()?.let { jwtToken ->
+            getOfferReceived(offer.offerReceiverId, offer.offerReceiverProductId)?.run {
+                deleteOfferApi.deleteOffer(jwtToken = jwtToken, offer.id).also {
                     it.deletedOfferId?.let { offerId ->
                         deleteOfferUpdateProduct(offerId, offerReceiverProductId)
                     }
                 }
-            } ?: DeleteOfferResponse(
-                statusCode = HttpStatusCode.Unauthorized.value,
-                error = HttpStatusCode.Unauthorized.description
-            )
+            } ?: DeleteOfferResponse(HttpStatusCode.OK.value)
 
-        } ?: DeleteOfferResponse(HttpStatusCode.OK.value)
+        } ?: DeleteOfferResponse(
+            statusCode = HttpStatusCode.Unauthorized.value,
+            error = HttpStatusCode.Unauthorized.description
+        )
 
-    suspend fun acceptOffer(offer: Offer) =
-        getOfferAccepted(offer.id)?.run {
-            loginRepository.jwtToken()?.run {
-                if (accepted.not())
-                    acceptOfferApi.acceptOffer(jwtToken = this, offer.id).also {
-                        it.acceptedOfferId?.let { acceptedOfferId ->
-                            offerDao.transaction { offerDao.accept(true, acceptedOfferId) }
-                        }
-                    } else AcceptOfferResponse(HttpStatusCode.Accepted.value)
-            } ?: AcceptOfferResponse(
-                statusCode = HttpStatusCode.Unauthorized.value,
-                error = HttpStatusCode.Unauthorized.description
-            )
+    suspend fun acceptOffer(offer: Offer) = loginRepository.jwtToken()?.let { jwtToken ->
+        getOfferReceived(offer.offerReceiverId, offer.offerReceiverProductId)?.run {
+            if (accepted.not())
+                acceptOfferApi.acceptOffer(jwtToken = jwtToken, offer.id).also {
+                    it.acceptedOfferId?.let { acceptedOfferId ->
+                        offerDao.transaction { offerDao.accept(true, acceptedOfferId) }
+                    }
+                } else AcceptOfferResponse(HttpStatusCode.Accepted.value)
+        } ?: AcceptOfferResponse(HttpStatusCode.NotFound.value)
 
-        } ?: AcceptOfferResponse(HttpStatusCode.Accepted.value)
+    } ?: AcceptOfferResponse(
+        statusCode = HttpStatusCode.Unauthorized.value,
+        error = HttpStatusCode.Unauthorized.description
+    )
 
-    suspend fun completeOffer(offer: Offer) =
-        getOfferCompleted(offer.id)?.run {
-            loginRepository.jwtToken()?.run {
-                if (completed.not())
-                    completeOfferApi.completeOffer(jwtToken = this, offer.id).also {
-                        it.completedOfferId?.let { completedOfferId ->
-                            offerDao.transaction { offerDao.complete(true, completedOfferId) }
-                        }
-                    } else CompleteOfferResponse(HttpStatusCode.Accepted.value)
-            } ?: CompleteOfferResponse(
-                statusCode = HttpStatusCode.Unauthorized.value,
-                error = HttpStatusCode.Unauthorized.description
-            )
+    suspend fun completeOffer(offer: Offer) = loginRepository.jwtToken()?.let { jwtToken ->
+        getOfferReceived(offer.offerReceiverId, offer.offerReceiverProductId)?.run {
+            if (completed.not())
+                completeOfferApi.completeOffer(jwtToken, offer.id).also {
+                    it.completedOfferId?.let { completedOfferId ->
+                        offerDao.transaction { offerDao.complete(true, completedOfferId) }
+                    }
+                } else CompleteOfferResponse(HttpStatusCode.Accepted.value)
+        } ?: CompleteOfferResponse(HttpStatusCode.NotFound.value)
 
-        } ?: CompleteOfferResponse(HttpStatusCode.Accepted.value)
+    } ?: CompleteOfferResponse(
+        statusCode = HttpStatusCode.Unauthorized.value,
+        error = HttpStatusCode.Unauthorized.description
+    )
 
 
     private fun addOffers(offers: List<Offer>) = offerDao.transaction {

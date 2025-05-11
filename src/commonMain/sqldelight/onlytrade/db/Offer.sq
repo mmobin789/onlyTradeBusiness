@@ -21,7 +21,8 @@ SELECT * FROM Offer
 WHERE id = ?;
 
 getOffers:
-SELECT * FROM Offer;
+SELECT * FROM Offer
+WHERE completed = ?;
 
 getOfferMade:
 SELECT * FROM Offer

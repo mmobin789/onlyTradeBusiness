@@ -64,7 +64,7 @@ class OfferRepository(
             getOffersApi()
         } else {
             val localOffers = offerDao.transactionWithResult {
-                offerDao.getOffers().executeAsList().map(::toOffer)
+                offerDao.getOffers(false).executeAsList().map(::toOffer)
             }
             if (localOffers.isEmpty()) {
                 getOffersApi()

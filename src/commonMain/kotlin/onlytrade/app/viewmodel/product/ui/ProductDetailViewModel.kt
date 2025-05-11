@@ -19,11 +19,12 @@ import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.LoadingOffe
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MakeOfferFail
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MakingOffer
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferDeleteApiError
-import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferDeleted
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferMade
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferNotMade
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferNotReceived
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferReceived
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferRejected
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferWithdrawn
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.WithdrawingOffer
 import onlytrade.app.viewmodel.product.ui.usecase.OfferUseCase
 
@@ -67,8 +68,8 @@ class ProductDetailViewModel(
                     offerMakerId = user!!.id,
                     offerReceiverProductId = offerReceiverProductId
                 )) {
-                WithdrawOfferUseCase.Result.OfferDeleted -> OfferDeleted
-                WithdrawOfferUseCase.Result.OfferNotFound -> OfferDeleted
+                WithdrawOfferUseCase.Result.OfferDeleted -> OfferWithdrawn
+                WithdrawOfferUseCase.Result.OfferNotFound -> OfferRejected
                 is WithdrawOfferUseCase.Result.Error -> OfferDeleteApiError(result.error)
             }
         }

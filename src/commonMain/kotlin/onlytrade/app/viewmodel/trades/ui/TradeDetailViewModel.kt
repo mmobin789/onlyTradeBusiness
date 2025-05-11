@@ -80,7 +80,7 @@ class TradeDetailViewModel(
                 offerMakerId = user!!.id, offerReceiverProductId = offerReceiverProductId
             )) {
                 WithdrawOfferUseCase.Result.OfferDeleted -> OfferWithdrawn
-                WithdrawOfferUseCase.Result.OfferNotFound -> OfferWithdrawn
+                WithdrawOfferUseCase.Result.OfferNotFound -> OfferRejected
                 is WithdrawOfferUseCase.Result.Error -> OfferDeleteApiError(result.error)
             }
         }
@@ -91,6 +91,7 @@ class TradeDetailViewModel(
         AppScope.launch {
             uiState.value = when (val result = acceptOfferUseCase(offer)) {
                 AcceptOfferUseCase.Result.OfferAccepted -> OfferAccepted
+                AcceptOfferUseCase.Result.OfferNotFound -> OfferWithdrawn
                 is AcceptOfferUseCase.Result.Error -> OfferAcceptApiError(result.error)
             }
         }
@@ -102,6 +103,7 @@ class TradeDetailViewModel(
             uiState.value =
                 when (val result = rejectOfferUseCase(offer)) {
                     RejectOfferUseCase.Result.OfferDeleted -> OfferRejected
+                    RejectOfferUseCase.Result.OfferNotFound -> OfferWithdrawn
                     is RejectOfferUseCase.Result.Error -> OfferDeleteApiError(result.error)
                 }
         }

@@ -18,7 +18,7 @@ class GetOffersReceivedUseCase(
                     when (statusCode) {
                         HttpStatusCode.OK.value -> {
                             val offerList = offers!!.filter {
-                                it.offerReceiverId == loginRepository.user()?.id && it.completed.not()
+                                it.offerReceiverId == loginRepository.user()?.id
                             }
                             if (offerList.isEmpty())
                                 Result.OffersNotFound

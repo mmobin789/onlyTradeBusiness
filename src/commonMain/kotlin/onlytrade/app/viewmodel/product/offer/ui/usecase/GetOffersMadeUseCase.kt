@@ -18,7 +18,7 @@ class GetOffersMadeUseCase(
                     when (statusCode) {
                         HttpStatusCode.OK.value -> {
                             val offerList = offers!!.filter {
-                                it.offerMakerId == loginRepository.user()?.id && it.completed.not()
+                                it.offerMakerId == loginRepository.user()?.id
                             }
                             if (offerList.isEmpty())
                                 Result.OffersNotFound

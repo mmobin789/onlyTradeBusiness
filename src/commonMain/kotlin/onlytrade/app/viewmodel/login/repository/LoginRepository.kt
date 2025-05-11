@@ -31,6 +31,10 @@ class LoginRepository(private val loginApi: LoginApi, private val localPrefs: Se
 
     fun isUserLoggedIn() = localPrefs.getStringOrNull(JWT_TOKEN).isNullOrBlank().not()
 
+    fun logout() {
+        localPrefs.remove(JWT_TOKEN)
+        localPrefs.remove(JWT_USER)
+    }
 
     private fun LoginResponse.saveLoginInfo() {
         jwtToken?.run {

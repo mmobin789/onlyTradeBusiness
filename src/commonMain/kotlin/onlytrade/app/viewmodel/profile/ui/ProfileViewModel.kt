@@ -8,12 +8,19 @@ import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Idle
 import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Loading
 import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Success
 import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Error
+import onlytrade.app.viewmodel.profile.ui.ProfileUiState.LoggedOut
 import onlytrade.app.viewmodel.profile.usecase.GetProfileUseCase
+import onlytrade.app.viewmodel.profile.usecase.LogoutUseCase
+import onlytrade.app.viewmodel.login.repository.LoginRepository
 
 class ProfileViewModel (
     private val getProfileUseCase: GetProfileUseCase,
+    private val logoutUseCase: LogoutUseCase,
+    loginRepository: LoginRepository
+
 ) : ViewModel() {
 
+    val isUserLoggedIn = loginRepository.isUserLoggedIn()
     var uiState: MutableStateFlow<ProfileUiState> = MutableStateFlow(Idle)
         private set
 
@@ -40,6 +47,14 @@ class ProfileViewModel (
                     uiState.value = Error(error = result.error)
                 }
             }
+        }
+    }
+
+    fun logout() {
+        loading()
+        viewModelScope.launch {
+            logoutUseCase()
+            uiState.value = LoggedOut
         }
     }
 

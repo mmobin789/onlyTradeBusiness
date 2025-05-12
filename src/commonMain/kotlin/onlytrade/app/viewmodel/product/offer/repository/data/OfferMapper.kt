@@ -20,6 +20,7 @@ object OfferMapper : KoinComponent {
             offerReceiverId = offerReceiverId,
             offerReceiverProductId = offerReceiverProductId,
             offeredProductIds = offeredProductIds,
+            offerReceiverProduct = Json.decodeFromString(offerReceiverProduct),
             extraPrice = extraPrice,
             accepted = accepted,
             completed = completed,

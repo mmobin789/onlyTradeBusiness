@@ -15,6 +15,7 @@ object ProductMapper {
             description = localProduct.description,
             estPrice = localProduct.estPrice,
             imageUrls = localProduct.imageUrls.split(","),
+            traded = localProduct.traded,
             offers = localProduct.offers?.let { Json.decodeFromString(it) }
         )
 

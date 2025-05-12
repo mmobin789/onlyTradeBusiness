@@ -137,10 +137,11 @@ class OfferRepository(
                 offerMakerId = offerMakerId,
                 offerReceiverId = offerReceiverId,
                 offerReceiverProductId = offerReceiverProductId,
+                offerReceiverProduct = Json.encodeToString(offerReceiverProduct),
                 offeredProductIds = Json.encodeToString(offeredProductIds),
                 extraPrice = extraPrice,
                 accepted = accepted,
-                completed = completed
+                completed = completed,
             )
         }
     }
@@ -215,6 +216,7 @@ class OfferRepository(
                     offerMakerId = offerMakerId,
                     offerReceiverId = offerReceiverId,
                     offerReceiverProductId = offerReceiverProductId,
+                    offerReceiverProduct = Json.encodeToString(offerReceiverProduct),
                     offeredProductIds = Json.encodeToString(offeredProductIds),
                     extraPrice = extraPrice,
                     accepted = accepted,

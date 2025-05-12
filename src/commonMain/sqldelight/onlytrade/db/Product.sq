@@ -1,3 +1,5 @@
+import kotlin.Boolean;
+
 
 CREATE TABLE Product (
     id INTEGER NOT NULL PRIMARY KEY,
@@ -8,12 +10,13 @@ CREATE TABLE Product (
     description TEXT NOT NULL,
     imageUrls TEXT NOT NULL,
     estPrice REAL NOT NULL,
+    traded INTEGER AS Boolean NOT NULL,
     offers TEXT
 );
 
 insert:
-INSERT OR REPLACE INTO Product(id,categoryId,subcategoryId, name, userId, description, imageUrls, estPrice,offers)
-VALUES (?, ?,?,?, ?, ?, ?, ?,?);
+INSERT OR REPLACE INTO Product(id,categoryId,subcategoryId, name, userId, description, imageUrls, estPrice,traded,offers)
+VALUES (?, ?,?,?, ?, ?, ?, ?,?,?);
 
 
 updateOffers:

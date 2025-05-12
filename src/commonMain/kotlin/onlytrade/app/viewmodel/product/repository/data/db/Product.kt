@@ -13,5 +13,6 @@ data class Product(
     val description: String,
     val estPrice: Double,
     val imageUrls: List<String>,
+    val traded: Boolean,
     val offers: List<Offer>? = null
 )

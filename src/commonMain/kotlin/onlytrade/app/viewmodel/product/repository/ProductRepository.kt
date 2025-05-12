@@ -118,6 +118,7 @@ class ProductRepository(
                         description = description,
                         estPrice = estPrice,
                         imageUrls = imageUrls.joinToString(","),
+                        traded = traded,
                         offers = offers?.let { Json.encodeToString(it) })
 
                     offers?.let { offers ->
@@ -135,6 +136,7 @@ class ProductRepository(
                 offerMakerId = offerMakerId,
                 offerReceiverId = offerReceiverId,
                 offerReceiverProductId = offerReceiverProductId,
+                offerReceiverProduct = Json.encodeToString(offerReceiverProduct),
                 offeredProductIds = Json.encodeToString(offeredProductIds),
                 extraPrice = extraPrice,
                 accepted = accepted,
@@ -158,6 +160,7 @@ class ProductRepository(
                 description = description,
                 estPrice = estPrice,
                 imageUrls = imageUrls.joinToString(","),
+                traded = traded,
                 offers = offers?.let { Json.encodeToString(it) }
             )
         }

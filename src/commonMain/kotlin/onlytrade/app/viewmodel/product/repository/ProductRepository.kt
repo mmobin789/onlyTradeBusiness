@@ -56,9 +56,9 @@ class ProductRepository(
         } else 0
 
         val localProducts = if (userId != null) dao.selectUsersPaged(
-            userId.toLong(), pageSize.toLong(), offset
+            userId.toLong(), traded = false, pageSize.toLong(), offset
         )
-        else dao.selectPaged(pageSize.toLong(), offset)
+        else dao.selectPaged(traded = false, pageSize.toLong(), offset)
 
         return GetProductsResponse().run {
             val localProductList = dao.transactionWithResult {
@@ -135,9 +135,9 @@ class ProductRepository(
                 id = id,
                 offerMakerId = offerMakerId,
                 offerReceiverId = offerReceiverId,
-                offerReceiverProductId = offerReceiverProductId,
+                offerReceiverProductId = offerReceiverProduct.id,
                 offerReceiverProduct = Json.encodeToString(offerReceiverProduct),
-                offeredProductIds = Json.encodeToString(offeredProductIds),
+                offeredProducts = Json.encodeToString(offeredProducts),
                 extraPrice = extraPrice,
                 accepted = accepted,
                 completed = completed

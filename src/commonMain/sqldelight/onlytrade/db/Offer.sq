@@ -6,15 +6,15 @@ CREATE TABLE Offer (
     offerReceiverId INTEGER NOT NULL,
     offerReceiverProductId INTEGER NOT NULL,
     offerReceiverProduct TEXT NOT NULL,
-    offeredProductIds TEXT NOT NULL,
+    offeredProducts TEXT NOT NULL,
     extraPrice REAL NOT NULL,
     accepted INTEGER AS Boolean NOT NULL,
     completed INTEGER AS Boolean NOT NULL
 );
 
 add:
-INSERT OR REPLACE INTO Offer(id,offerMakerId,offerReceiverId, offerReceiverProductId,offerReceiverProduct, offeredProductIds,extraPrice,accepted,completed)
-VALUES (?, ?,?,?,?,? ,?,?,?);
+INSERT OR REPLACE INTO Offer(id,offerMakerId,offerReceiverId,offerReceiverProductId,offerReceiverProduct,offeredProducts,extraPrice,accepted,completed)
+VALUES (?, ?,?,?,?,?,?,?,? );
 
 
 getById:

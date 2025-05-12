@@ -136,12 +136,12 @@ class OfferRepository(
                 id = id,
                 offerMakerId = offerMakerId,
                 offerReceiverId = offerReceiverId,
-                offerReceiverProductId = offerReceiverProductId,
+                offerReceiverProductId = offerReceiverProduct.id,
                 offerReceiverProduct = Json.encodeToString(offerReceiverProduct),
-                offeredProductIds = Json.encodeToString(offeredProductIds),
+                offeredProducts = Json.encodeToString(offeredProducts),
                 extraPrice = extraPrice,
                 accepted = accepted,
-                completed = completed,
+                completed = completed
             )
         }
     }
@@ -163,10 +163,10 @@ class OfferRepository(
 
     suspend fun rejectOffer(offer: Offer) =
         loginRepository.jwtToken()?.let { jwtToken ->
-            getOfferReceived(offer.offerReceiverId, offer.offerReceiverProductId)?.run {
+            getOfferReceived(offer.offerReceiverId, offer.offerReceiverProduct.id)?.run {
                 deleteOfferApi.deleteOffer(jwtToken = jwtToken, offer.id).also {
                     it.deletedOfferId?.let { offerId ->
-                        deleteOfferUpdateProduct(offerId, offerReceiverProductId)
+                        deleteOfferUpdateProduct(offerId, offer.offerReceiverProduct.id)
                     } ?: deleteOffer(offer.id)
                 }
             } ?: DeleteOfferResponse(HttpStatusCode.OK.value)
@@ -177,11 +177,17 @@ class OfferRepository(
         )
 
     suspend fun acceptOffer(offer: Offer) = loginRepository.jwtToken()?.let { jwtToken ->
-        getOfferReceived(offer.offerReceiverId, offer.offerReceiverProductId)?.run {
+        getOfferReceived(offer.offerReceiverId, offer.offerReceiverProduct.id)?.run {
             if (accepted.not())
                 acceptOfferApi.acceptOffer(jwtToken = jwtToken, offer.id).also {
                     it.acceptedOfferId?.let { acceptedOfferId ->
-                        offerDao.transaction { offerDao.accept(true, acceptedOfferId) }
+                        onlyTradeDB.transaction {
+                            offerDao.accept(true, acceptedOfferId)
+                            productDao.traded(true, offer.offerReceiverProduct.id)
+                            offer.offeredProducts.forEach { offeredProduct ->
+                                productDao.traded(true, offeredProduct.id)
+                            }
+                        }
                     } ?: deleteOffer(offer.id)
                 } else AcceptOfferResponse(HttpStatusCode.Accepted.value)
         } ?: AcceptOfferResponse(HttpStatusCode.NotFound.value)
@@ -192,7 +198,7 @@ class OfferRepository(
     )
 
     suspend fun completeOffer(offer: Offer) = loginRepository.jwtToken()?.let { jwtToken ->
-        getOfferReceived(offer.offerReceiverId, offer.offerReceiverProductId)?.run {
+        getOfferReceived(offer.offerReceiverId, offer.offerReceiverProduct.id)?.run {
             if (completed.not())
                 completeOfferApi.completeOffer(jwtToken, offer.id).also {
                     it.completedOfferId?.let { completedOfferId ->
@@ -215,9 +221,9 @@ class OfferRepository(
                     id = id,
                     offerMakerId = offerMakerId,
                     offerReceiverId = offerReceiverId,
-                    offerReceiverProductId = offerReceiverProductId,
+                    offerReceiverProductId = offer.offerReceiverProduct.id,
                     offerReceiverProduct = Json.encodeToString(offerReceiverProduct),
-                    offeredProductIds = Json.encodeToString(offeredProductIds),
+                    offeredProducts = Json.encodeToString(offeredProducts),
                     extraPrice = extraPrice,
                     accepted = accepted,
                     completed = completed

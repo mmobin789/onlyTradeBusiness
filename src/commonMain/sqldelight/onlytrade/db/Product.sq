@@ -18,6 +18,11 @@ insert:
 INSERT OR REPLACE INTO Product(id,categoryId,subcategoryId, name, userId, description, imageUrls, estPrice,traded,offers)
 VALUES (?, ?,?,?, ?, ?, ?, ?,?,?);
 
+traded:
+UPDATE Product
+SET traded = ?
+WHERE id = ?;
+
 
 updateOffers:
 UPDATE Product
@@ -31,12 +36,13 @@ WHERE id = ?;
 
 selectPaged:
 SELECT * FROM Product
+WHERE traded = ?
 ORDER BY id DESC
 LIMIT ? OFFSET ?;
 
 selectUsersPaged:
 SELECT * FROM Product
-WHERE userId = ?
+WHERE userId = ? AND traded = ?
 ORDER BY id DESC
 LIMIT ? OFFSET ?;
 

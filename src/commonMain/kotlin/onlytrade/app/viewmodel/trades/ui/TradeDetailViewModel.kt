@@ -56,9 +56,9 @@ class TradeDetailViewModel(
     fun checkOffer(offer: Offer) {
 
         if (isMyProduct(offer.offerMakerId).not()) {
-            getOfferMade(offer.offerReceiverProductId)
+            getOfferMade(offer.offerReceiverProduct.id)
         } else {
-            getOfferReceived(offer.offerReceiverProductId)
+            getOfferReceived(offer.offerReceiverProduct.id)
         }
     }
 

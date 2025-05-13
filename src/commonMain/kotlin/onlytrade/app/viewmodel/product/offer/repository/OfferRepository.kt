@@ -58,7 +58,7 @@ class OfferRepository(
         val now = Clock.System.now()
         val minutesDiff = offersUpdateDateTime.until(now, DateTimeUnit.MINUTE)
         val updateRequired =
-            minutesDiff >= 2  // 2 minutes //todo need to update server sync time.
+            minutesDiff >= 1  // 2 minutes //todo need to update server sync time.
 
         if (updateRequired) {
             getOffersApi()

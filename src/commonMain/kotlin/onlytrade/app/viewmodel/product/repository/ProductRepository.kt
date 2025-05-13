@@ -45,7 +45,7 @@ class ProductRepository(
         val productUpdateDateTime = Instant.parse(this)
         val now = Clock.System.now()
         val minutesDiff = productUpdateDateTime.until(now, DateTimeUnit.MINUTE)
-        val updateRequired = minutesDiff >= 2  // 2 minutes //todo need to update server sync time.
+        val updateRequired = minutesDiff >= 1  // 2 minutes //todo need to update server sync time.
 
         if (updateRequired) {
             getProductsApi(pageNo, pageSize, userId)

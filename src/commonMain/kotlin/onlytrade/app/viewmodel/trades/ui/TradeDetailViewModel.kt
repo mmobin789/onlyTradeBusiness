@@ -114,7 +114,7 @@ class TradeDetailViewModel(
         AppScope.launch {
             uiState.value = when (val result = completeOfferUseCase(offer)) {
                 CompleteOfferUseCase.Result.OfferCompleted -> OfferCompleted
-                CompleteOfferUseCase.Result.OfferNotFound -> OfferDeleted
+                CompleteOfferUseCase.Result.OfferNotFound -> OfferDeleted // this won't happen.
                 is CompleteOfferUseCase.Result.Error -> OfferCompleteApiError(result.error)
             }
         }

@@ -12,6 +12,7 @@ sealed class ProductDetailUiState {
     data class OfferMade(val offer: Offer) : ProductDetailUiState()
     data object OfferNotMade : ProductDetailUiState()
     data object MakingOffer : ProductDetailUiState()
+    data object OffersExceeded : ProductDetailUiState()
     data object MakeOfferFail : ProductDetailUiState()
     data object WithdrawingOffer : ProductDetailUiState()
     data object OfferRejected : ProductDetailUiState()

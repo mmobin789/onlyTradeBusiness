@@ -68,7 +68,7 @@ class ProductRepository(
                 getProductsApi(pageNo, pageSize, userId)
             } else {
                 copy(
-                    statusCode = HttpStatusCode.OK.value, products = localProductList
+                    statusCode = HttpStatusCode.PartialContent.value, products = localProductList
                 )
             }
 

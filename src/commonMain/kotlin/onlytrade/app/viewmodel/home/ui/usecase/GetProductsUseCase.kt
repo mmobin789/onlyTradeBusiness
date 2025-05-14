@@ -18,7 +18,7 @@ class GetProductsUseCase(
             productRepository.getProducts(pageNo = pageNo, pageSize = pageSize, userId = userId)
                 .run {
                     when (statusCode) {
-                        HttpStatusCode.OK.value -> Result.ProductPage(products = products!!) //guaranteed non-null products.
+                        HttpStatusCode.PartialContent.value -> Result.ProductPage(products = products!!) //guaranteed non-null products.
                         HttpStatusCode.NotFound.value -> Result.ProductsNotFound // all products loaded or no products at all.
                         else -> Result.Error(
                             error = error ?: "Something went wrong."

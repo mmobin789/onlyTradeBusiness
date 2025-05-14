@@ -12,14 +12,18 @@ class OfferUseCase(private val offerRepository: OfferRepository) {
     ) = withContext(IODispatcher) {
         offerRepository.addOffer(offerReceiverId, offerReceiverProductId, offeredProductIds)
             .run {
-                if (statusCode == HttpStatusCode.Created.value) // offer made.
-                    Result.OfferMade(offer!!) // offer guaranteed.
-                else Result.Error(error = error ?: "Something went wrong.")
+                when (statusCode) {
+                    HttpStatusCode.Created.value // offer made.
+                        -> Result.OfferMade(offer!!) // offer guaranteed.
+                    HttpStatusCode.NotAcceptable.value -> Result.OffersExceeded
+                    else -> Result.Error(error = error ?: "Something went wrong.")
+                }
             }
     }
 
     sealed class Result {
         data class OfferMade(val offer: Offer) : Result()
+        data object OffersExceeded : Result()
         data class Error(val error: String) : Result()
     }
 

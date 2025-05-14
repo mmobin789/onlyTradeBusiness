@@ -25,6 +25,7 @@ import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferNotRec
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferReceived
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferRejected
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferWithdrawn
+import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OffersExceeded
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.WithdrawingOffer
 import onlytrade.app.viewmodel.product.ui.usecase.OfferUseCase
 
@@ -119,6 +120,7 @@ class ProductDetailViewModel(
                 offerReceiverProductId = productId,
                 offeredProductIds = offeredProductIds,
             )) {
+                OfferUseCase.Result.OffersExceeded -> OffersExceeded
                 is OfferUseCase.Result.Error -> MakeOfferFail
                 is OfferUseCase.Result.OfferMade -> OfferMade(result.offer)
             }

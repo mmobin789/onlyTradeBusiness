@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import onlytrade.app.component.AppScope
 import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Error
 import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Idle
 import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Loading
@@ -49,7 +50,7 @@ class ProfileViewModel (
 
     fun logOut() {
         loading()
-        viewModelScope.launch {
+        AppScope.launch {
             logoutUseCase()
             uiState.value = LoggedOut
         }

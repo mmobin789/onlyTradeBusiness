@@ -34,11 +34,6 @@ getById:
 SELECT * FROM Product
 WHERE id = ?;
 
-
-getById:
-SELECT * FROM Product
-WHERE id = ?;
-
 selectPaged:
 SELECT * FROM Product
 WHERE traded = ?

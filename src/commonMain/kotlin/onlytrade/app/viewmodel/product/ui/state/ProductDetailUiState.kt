@@ -1,12 +1,21 @@
 package onlytrade.app.viewmodel.product.ui.state
 
-import onlytrade.app.viewmodel.product.repository.data.db.Product
+import onlytrade.app.viewmodel.product.offer.repository.data.db.Offer
 
 sealed class ProductDetailUiState {
     data object Idle : ProductDetailUiState()
-    data object LoadingDetail : ProductDetailUiState()
+    data object LoadingOfferMade : ProductDetailUiState()
+    data object LoadingOfferReceived : ProductDetailUiState()
+    data object GuestUser : ProductDetailUiState()
+    data object OfferReceived : ProductDetailUiState()
+    data object OfferNotReceived : ProductDetailUiState()
+    data class OfferMade(val offer: Offer) : ProductDetailUiState()
+    data object OfferNotMade : ProductDetailUiState()
     data object MakingOffer : ProductDetailUiState()
-    data object OfferMade : ProductDetailUiState()
+    data object OffersExceeded : ProductDetailUiState()
     data object MakeOfferFail : ProductDetailUiState()
-    data class ProductFound(val product: Product) : ProductDetailUiState()
+    data object WithdrawingOffer : ProductDetailUiState()
+    data object OfferRejected : ProductDetailUiState()
+    data object OfferWithdrawn : ProductDetailUiState()
+    data class OfferDeleteApiError(val error: String) : ProductDetailUiState()
 }

@@ -10,16 +10,22 @@ import onlytrade.app.viewmodel.login.repository.data.remote.model.response.Login
 
 class LoginRepository(private val loginApi: LoginApi, private val localPrefs: Settings) {
 
+    companion object {
+        private var user: User? = null
+        private var jwtToken: String? = null
+    }
+
     /**
      * Returns the authenticated user's JWT if logged in.
      */
-    fun jwtToken() = localPrefs.getStringOrNull(JWT_TOKEN)
+    fun jwtToken() = jwtToken ?: localPrefs.getStringOrNull(JWT_TOKEN).also { jwtToken = it }
 
     /**
      * Returns the authenticated user if logged in.
      */
-    fun user() = localPrefs.getStringOrNull(JWT_USER)?.run {
-        Json.decodeFromString<User>(this)
+    fun user() = user ?: localPrefs.getStringOrNull(JWT_USER)?.run {
+        Json.decodeFromString<User>(this).also { user = it }
+
     }
 
     suspend fun loginWithPhone(mobileNo: String, pwd: String) =
@@ -29,12 +35,8 @@ class LoginRepository(private val loginApi: LoginApi, private val localPrefs: Se
     suspend fun loginWithEmail(email: String, pwd: String) =
         loginApi.loginByEmail(email, pwd).also { it.saveLoginInfo() }
 
-    fun isUserLoggedIn() = localPrefs.getStringOrNull(JWT_TOKEN).isNullOrBlank().not()
+    fun isUserLoggedIn() = jwtToken().isNullOrBlank().not()
 
-    fun logout() {
-        localPrefs.remove(JWT_TOKEN)
-        localPrefs.remove(JWT_USER)
-    }
 
     private fun LoginResponse.saveLoginInfo() {
         jwtToken?.run {

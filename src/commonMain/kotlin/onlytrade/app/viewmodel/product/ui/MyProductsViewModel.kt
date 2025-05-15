@@ -18,7 +18,7 @@ class MyProductsViewModel(
     private val loginRepository: LoginRepository
 ) : ViewModel() {
 
-    val pickedProductIds = hashSetOf<Long>()
+    val pickedProductIds = linkedSetOf<Long>()
 
     var uiState: MutableStateFlow<MyProductsUiState> = MutableStateFlow(Idle)
         private set
@@ -44,13 +44,7 @@ class MyProductsViewModel(
     }
 
 
-    fun getProducts(tryAgain: Boolean = false) {
-
-
-        if (tryAgain) {
-            productsNotFound = false
-            removeLoadedPage()
-        }
+    fun getProducts() {
 
         /**
          * This checks if the product page requested is already loaded on ui or if products not found.
@@ -70,7 +64,7 @@ class MyProductsViewModel(
                     pageSize = productPageSizeExpected,
                     userId = loginRepository.user()?.id
                 )) {
-                is GetProductsUseCase.Result.GetProducts -> {
+                is GetProductsUseCase.Result.ProductPage -> {
                     productsNotFound = false
 
                     val productPage = result.products

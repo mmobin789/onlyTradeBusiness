@@ -1,9 +1,9 @@
 package onlytrade.app.viewmodel.product.ui
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import onlytrade.app.component.AppScope
 import onlytrade.app.viewmodel.product.ui.state.AddProductUiState
 import onlytrade.app.viewmodel.product.ui.state.AddProductUiState.AddProductFailed
 import onlytrade.app.viewmodel.product.ui.state.AddProductUiState.CategoryNotSelected
@@ -92,7 +92,7 @@ class AddProductViewModel(private val addProductUseCase: AddProductUseCase) : Vi
 
         loading()
 
-        viewModelScope.launch {
+        AppScope.launch {
             uiState.value = when (val result = addProductUseCase(
                 name = title,
                 description = description,

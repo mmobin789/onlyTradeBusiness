@@ -5,7 +5,6 @@ import kotlinx.coroutines.withContext
 import onlytrade.app.IODispatcher
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.repository.ProductRepository
-import onlytrade.app.viewmodel.product.repository.data.db.Product
 import onlytrade.app.viewmodel.product.repository.data.remote.request.AddProductRequest
 
 class AddProductUseCase(
@@ -23,16 +22,12 @@ class AddProductUseCase(
     ) =
         withContext(IODispatcher) {
             val addProductRequest = AddProductRequest(
-                Product(
-                    id = 0,
-                    userId = loginRepository.user()?.id ?: 0,
-                    name = name,
-                    description = description,
-                    categoryId = categoryId,
-                    subcategoryId = subcategoryId,
-                    estPrice = estPrice,
-                    imageUrls = emptyList()
-                ),
+                userId = loginRepository.user()?.id!!,
+                name = name,
+                description = description,
+                categoryId = categoryId,
+                subcategoryId = subcategoryId,
+                estPrice = estPrice,
                 productImages = productImages
 
             )

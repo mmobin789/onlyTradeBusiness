@@ -1,9 +1,9 @@
 package onlytrade.app.viewmodel.login.ui
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import onlytrade.app.component.AppScope
 import onlytrade.app.viewmodel.login.ui.LoginUiState.BlankEmailInputError
 import onlytrade.app.viewmodel.login.ui.LoginUiState.BlankFormError
 import onlytrade.app.viewmodel.login.ui.LoginUiState.BlankMobileInputError
@@ -49,7 +49,7 @@ class LoginViewModel(
 
 
     fun doPhoneLogin(mobileNo: String, pwd: String) {
-        viewModelScope.launch {
+        AppScope.launch {
             uiState.value = if (mobileNo.isBlank() && pwd.isBlank()) {
                 BlankFormError
 
@@ -110,7 +110,7 @@ class LoginViewModel(
 
         loading()
 
-        viewModelScope.launch {
+        AppScope.launch {
             uiState.value = when (val result = emailLoginUseCase(email, validPwd)) {
                 is EmailLoginUseCase.Result.OK -> LoginUiState.LoggedIn
                 is EmailLoginUseCase.Result.Error -> LoginUiState.ApiError(error = result.error)

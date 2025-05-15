@@ -12,17 +12,18 @@ import io.ktor.client.request.setBody
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import kotlinx.serialization.json.Json
+import onlytrade.app.AppConfig
 import onlytrade.app.viewmodel.product.repository.data.remote.request.AddProductRequest
 import onlytrade.app.viewmodel.product.repository.data.remote.response.AddProductResponse
 
 /**
  * client to the AddProduct web service.
  */
-class AddProductApi(private val client: HttpClient) {
+class AddProductApi(private val appConfig: AppConfig, private val client: HttpClient) {
 
     suspend fun addProduct(addProductRequest: AddProductRequest, jwtToken: String) =
         try {
-            val httpResponse = client.post("https://onlytrade.co/product/add") {
+            val httpResponse = client.post("${appConfig.baseUrl}/product/add") {
                 header(
                     HttpHeaders.Authorization,
                     "Bearer $jwtToken"

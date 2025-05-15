@@ -5,10 +5,11 @@ import kotlinx.serialization.Transient
 
 @Serializable
 data class AddProductRequest(
-    val name: String,
-    val description: String,
     val categoryId: Long,
     val subcategoryId: Long,
+    val userId: Long,
+    val name: String,
+    val description: String,
     val estPrice: Double,
     @Transient
     val productImages: List<ByteArray>? = null

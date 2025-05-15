@@ -1,12 +1,16 @@
-package onlytrade.app.viewmodel.product.usecase
+package onlytrade.app.viewmodel.product.ui.usecase
 
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.withContext
 import onlytrade.app.IODispatcher
+import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.repository.ProductRepository
 import onlytrade.app.viewmodel.product.repository.data.remote.request.AddProductRequest
 
-class AddProductUseCase(private val productRepository: ProductRepository) {
+class AddProductUseCase(
+    private val loginRepository: LoginRepository,
+    private val productRepository: ProductRepository
+) {
 
     suspend operator fun invoke(
         name: String,
@@ -18,6 +22,7 @@ class AddProductUseCase(private val productRepository: ProductRepository) {
     ) =
         withContext(IODispatcher) {
             val addProductRequest = AddProductRequest(
+                userId = loginRepository.user()?.id!!,
                 name = name,
                 description = description,
                 categoryId = categoryId,
@@ -26,7 +31,7 @@ class AddProductUseCase(private val productRepository: ProductRepository) {
                 productImages = productImages
 
             )
-            productRepository.addProduct(addProductRequest = addProductRequest).run {
+            productRepository.addProduct(addProductRequest).run {
                 if (statusCode == HttpStatusCode.Created.value) // product processing for review.
                     Result.OK
                 else Result.Error(error = error ?: "Something went wrong.")

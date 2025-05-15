@@ -1,21 +1,21 @@
 package onlytrade.app.viewmodel.home.ui
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import onlytrade.app.component.AppScope
 import onlytrade.app.viewmodel.home.ui.HomeUiState.GetProductsApiError
 import onlytrade.app.viewmodel.home.ui.HomeUiState.Idle
 import onlytrade.app.viewmodel.home.ui.HomeUiState.LoadingProducts
 import onlytrade.app.viewmodel.home.ui.HomeUiState.ProductsNotFound
-import onlytrade.app.viewmodel.home.usecase.GetProductsUseCase
+import onlytrade.app.viewmodel.home.ui.usecase.GetProductsUseCase
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.repository.data.db.Product
 
 
 class HomeViewModel(
     private val getProductsUseCase: GetProductsUseCase,
-    loginRepository: LoginRepository
+    private val loginRepository: LoginRepository
 ) : ViewModel() {
 
     var uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(Idle)
@@ -43,13 +43,7 @@ class HomeViewModel(
     }
 
 
-    fun getProducts(tryAgain: Boolean = false) {
-
-
-        if (tryAgain) {
-            productsNotFound = false
-            removeLoadedPage()
-        }
+    fun getProducts() {
 
         /**
          * This checks if the product page requested is already loaded on ui or if products not found.
@@ -62,16 +56,18 @@ class HomeViewModel(
 
         uiState.value = LoadingProducts
 
-        viewModelScope.launch {
+        AppScope.launch {
             when (val result =
                 getProductsUseCase(
                     pageNo = productsPageNo,
                     pageSize = productPageSizeExpected
                 )) {
-                is GetProductsUseCase.Result.GetProducts -> {
+                is GetProductsUseCase.Result.ProductPage -> {
                     productsNotFound = false
 
-                    val productPage = result.products
+                    val productPage = result.products.filterNot { product ->
+                        product.userId == loginRepository.user()?.id
+                    }
 
                     if (productPage.size == productPageSizeExpected)
                         productsPageNo++
@@ -82,7 +78,6 @@ class HomeViewModel(
                     idle()
 
                 }
-
 
                 GetProductsUseCase.Result.ProductsNotFound -> {
                     productsNotFound = true

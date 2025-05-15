@@ -4,19 +4,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import onlytrade.app.viewmodel.home.usecase.GetProductsUseCase
+import onlytrade.app.viewmodel.home.ui.usecase.GetProductsUseCase
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.repository.data.db.Product
-import onlytrade.app.viewmodel.product.ui.MyProductsUiState.GetProductsApiError
-import onlytrade.app.viewmodel.product.ui.MyProductsUiState.Idle
-import onlytrade.app.viewmodel.product.ui.MyProductsUiState.LoadingProducts
-import onlytrade.app.viewmodel.product.ui.MyProductsUiState.ProductsNotFound
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.GetProductsApiError
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.Idle
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.LoadingProducts
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.ProductsNotFound
 
 class MyProductsViewModel(
     private val getProductsUseCase: GetProductsUseCase,
     private val loginRepository: LoginRepository
 ) : ViewModel() {
 
+    val pickedProductIds = linkedSetOf<Long>()
 
     var uiState: MutableStateFlow<MyProductsUiState> = MutableStateFlow(Idle)
         private set
@@ -42,13 +44,7 @@ class MyProductsViewModel(
     }
 
 
-    fun getProducts(tryAgain: Boolean = false) {
-
-
-        if (tryAgain) {
-            productsNotFound = false
-            removeLoadedPage()
-        }
+    fun getProducts() {
 
         /**
          * This checks if the product page requested is already loaded on ui or if products not found.
@@ -68,7 +64,7 @@ class MyProductsViewModel(
                     pageSize = productPageSizeExpected,
                     userId = loginRepository.user()?.id
                 )) {
-                is GetProductsUseCase.Result.GetProducts -> {
+                is GetProductsUseCase.Result.ProductPage -> {
                     productsNotFound = false
 
                     val productPage = result.products
@@ -101,5 +97,13 @@ class MyProductsViewModel(
     }
 
     private fun removeLoadedPage() = loadedPages.remove(productsPageNo)
+
+    fun selectProduct(id: Long): Boolean {
+        if (pickedProductIds.add(id).not()) {
+            pickedProductIds.remove(id)
+            return false
+        }
+        return true
+    }
 
 }

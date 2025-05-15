@@ -12,12 +12,15 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
+import onlytrade.app.AppConfig
 import onlytrade.app.viewmodel.home.di.homeModule
 import onlytrade.app.viewmodel.login.di.loginModule
 import onlytrade.app.viewmodel.product.di.addProductModule
 import onlytrade.app.viewmodel.product.di.myProductsModule
+import onlytrade.app.viewmodel.product.di.productDetailModule
 import onlytrade.app.viewmodel.profile.di.profileModule
 import onlytrade.app.viewmodel.splash.di.splashModule
+import onlytrade.app.viewmodel.trades.di.myTradesModule
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -35,6 +38,10 @@ object OTBusinessModule {
             return
 
         val commonModule = module {
+
+            single {
+                AppConfig
+            }
             single {
                 HttpClient {
                     install(HttpTimeout) {
@@ -73,6 +80,8 @@ object OTBusinessModule {
                 homeModule,
                 addProductModule,
                 myProductsModule,
+                productDetailModule,
+                myTradesModule,
                 profileModule
             )
             diInit = true

@@ -7,8 +7,13 @@ import onlytrade.app.viewmodel.login.repository.data.LoginConst.JWT_USER
 import onlytrade.app.viewmodel.login.repository.data.db.User
 import onlytrade.app.viewmodel.login.repository.data.remote.LoginApi
 import onlytrade.app.viewmodel.login.repository.data.remote.model.response.LoginResponse
+import onlytrade.db.OnlyTradeDB
 
-class LoginRepository(private val loginApi: LoginApi, private val localPrefs: Settings) {
+class LoginRepository(
+    private val loginApi: LoginApi,
+    private val localPrefs: Settings,
+    private val onlyTradeDB: OnlyTradeDB
+) {
 
     companion object {
         private var user: User? = null
@@ -36,6 +41,16 @@ class LoginRepository(private val loginApi: LoginApi, private val localPrefs: Se
         loginApi.loginByEmail(email, pwd).also { it.saveLoginInfo() }
 
     fun isUserLoggedIn() = jwtToken().isNullOrBlank().not()
+
+    fun logOut() {
+        localPrefs.clear()
+        onlyTradeDB.run {
+            transaction {
+                onlyTradeDB.productQueries.deleteAll()
+                onlyTradeDB.offerQueries.deleteAll()
+            }
+        }
+    }
 
 
     private fun LoginResponse.saveLoginInfo() {

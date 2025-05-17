@@ -6,6 +6,7 @@ sealed class ProfileUiState {
     data object BlankNameError : ProfileUiState()
     data object InvalidPhoneFormatError : ProfileUiState()
     data object InvalidEmailFormatError : ProfileUiState()
+    data object LoggedOut : ProfileUiState()
     data object Updated : ProfileUiState()
 
     data class Success(

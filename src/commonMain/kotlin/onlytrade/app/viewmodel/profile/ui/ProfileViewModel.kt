@@ -4,14 +4,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import onlytrade.app.component.AppScope
+import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Error
 import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Idle
 import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Loading
+import onlytrade.app.viewmodel.profile.ui.ProfileUiState.LoggedOut
 import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Success
-import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Error
 import onlytrade.app.viewmodel.profile.usecase.GetProfileUseCase
+import onlytrade.app.viewmodel.profile.usecase.LogoutUseCase
 
 class ProfileViewModel (
     private val getProfileUseCase: GetProfileUseCase,
+    private val logoutUseCase: LogoutUseCase
+
 ) : ViewModel() {
 
     var uiState: MutableStateFlow<ProfileUiState> = MutableStateFlow(Idle)
@@ -40,6 +45,14 @@ class ProfileViewModel (
                     uiState.value = Error(error = result.error)
                 }
             }
+        }
+    }
+
+    fun logOut() {
+        loading()
+        AppScope.launch {
+            logoutUseCase()
+            uiState.value = LoggedOut
         }
     }
 

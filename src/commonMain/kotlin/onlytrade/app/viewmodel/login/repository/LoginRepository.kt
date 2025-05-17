@@ -5,12 +5,14 @@ import kotlinx.serialization.json.Json
 import onlytrade.app.viewmodel.login.repository.data.LoginConst.JWT_TOKEN
 import onlytrade.app.viewmodel.login.repository.data.LoginConst.JWT_USER
 import onlytrade.app.viewmodel.login.repository.data.db.User
-import onlytrade.app.viewmodel.login.repository.data.remote.LoginApi
+import onlytrade.app.viewmodel.login.repository.data.remote.api.KycApi
+import onlytrade.app.viewmodel.login.repository.data.remote.api.LoginApi
 import onlytrade.app.viewmodel.login.repository.data.remote.model.response.LoginResponse
 import onlytrade.db.OnlyTradeDB
 
 class LoginRepository(
     private val loginApi: LoginApi,
+    private val kycApi: KycApi,
     private val localPrefs: Settings,
     private val onlyTradeDB: OnlyTradeDB
 ) {

@@ -1,4 +1,4 @@
-package onlytrade.app.viewmodel.login.repository.data.remote
+package onlytrade.app.viewmodel.login.repository.data.remote.api
 
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient

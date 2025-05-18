@@ -1,4 +1,4 @@
-package onlytrade.app.viewmodel.login.ui
+package onlytrade.app.viewmodel.login.ui.state
 
 sealed class LoginUiState {
     data object Idle : LoginUiState()

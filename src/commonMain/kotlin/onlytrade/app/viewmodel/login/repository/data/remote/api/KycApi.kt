@@ -20,7 +20,7 @@ import onlytrade.app.viewmodel.login.repository.data.remote.model.response.KycRe
  */
 class KycApi(private val appConfig: AppConfig, private val client: HttpClient) {
 
-    suspend fun verification(kycRequest: KycRequest, jwtToken: String) =
+    suspend fun uploadDocs(jwtToken: String, kycRequest: KycRequest) =
         try {
             val httpResponse = client.post("${appConfig.baseUrl}/kyc") {
                 header(

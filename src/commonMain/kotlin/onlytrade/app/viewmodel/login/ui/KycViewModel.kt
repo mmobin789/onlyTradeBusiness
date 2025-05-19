@@ -40,26 +40,28 @@ class KycViewModel(
     ) {
         val user = loginRepository.user()
 
-        uiState.value = if (user?.email.isNullOrBlank()) {
+        if (user?.email.isNullOrBlank()) {
             if (email.isNullOrBlank()) {
-                BlankEmailInputError
+                uiState.value = BlankEmailInputError
                 return
-            } else if (email.matches(emailAddressRegex).not()) {
-                EmailFormatInputError
+            }
+            if (email.matches(emailAddressRegex).not()) {
+                uiState.value = EmailFormatInputError
                 return
-            } else Idle
+            }
 
         } else {
             if (mobileNo.isNullOrBlank()) {
-                BlankMobileInputError
+                uiState.value = BlankMobileInputError
                 return
-            } else if (mobileNo.matches(pakistaniMobileNoRegex).not()) {
-                MobileNoFormatInputError
+            }
+            if (mobileNo.matches(pakistaniMobileNoRegex).not()) {
+                uiState.value = MobileNoFormatInputError
                 return
-            } else Idle
+            }
         }
 
-        if (docs.isEmpty() || docs.size < 3) {
+        if (docs.isEmpty() || docs.size < 2) {
             uiState.value = DocsIncomplete
             return
         }

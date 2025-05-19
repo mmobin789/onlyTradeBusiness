@@ -35,13 +35,13 @@ class OfferRepository(
 ) {
     private val offersLastUpdatedAt = "OFFERS_LAST_UPDATED_AT"
 
-    private val offerDao = onlyTradeDB.offerQueries
+    private val dao = onlyTradeDB.offerQueries
 
     private val productDao = onlyTradeDB.productQueries
 
     private suspend fun getOffersApi() = loginRepository.jwtToken()?.let { jwtToken ->
         getOffersApi.getOffers(jwtToken).also {
-            if (it.offers.isNullOrEmpty()) offerDao.transaction { offerDao.deleteAll() }
+            if (it.offers.isNullOrEmpty()) dao.transaction { dao.deleteAll() }
             else {
                 localPrefs.putString(offersLastUpdatedAt, Clock.System.now().toString())
                 addOffers(it.offers)
@@ -63,8 +63,8 @@ class OfferRepository(
         if (updateRequired) {
             getOffersApi()
         } else {
-            val localOffers = offerDao.transactionWithResult {
-                offerDao.getOffers(false).executeAsList().map(::toOffer)
+            val localOffers = dao.transactionWithResult {
+                dao.getOffers(false).executeAsList().map(::toOffer)
             }
             if (localOffers.isEmpty()) {
                 getOffersApi()
@@ -77,8 +77,8 @@ class OfferRepository(
      * This method is offline only.
      */
     fun getOfferMade(offerMakerId: Long, offerReceiverProductId: Long) =
-        offerDao.transactionWithResult {
-            offerDao.getOfferMade(offerMakerId, offerReceiverProductId).executeAsOneOrNull()
+        dao.transactionWithResult {
+            dao.getOfferMade(offerMakerId, offerReceiverProductId).executeAsOneOrNull()
                 ?.run(::toOffer)
         }
 
@@ -87,18 +87,18 @@ class OfferRepository(
      * This method is offline only.
      */
     fun getOfferReceived(offerReceiverId: Long, offerReceiverProductId: Long) =
-        offerDao.transactionWithResult {
-            offerDao.getOfferReceived(offerReceiverId, offerReceiverProductId).executeAsOneOrNull()
+        dao.transactionWithResult {
+            dao.getOfferReceived(offerReceiverId, offerReceiverProductId).executeAsOneOrNull()
                 ?.run(::toOffer)
         }
 
-    fun getOfferAccepted(offerId: Long) = offerDao.transactionWithResult {
-        offerDao.getOfferAccepted(offerId, accepted = true, completed = false).executeAsOneOrNull()
+    fun getOfferAccepted(offerId: Long) = dao.transactionWithResult {
+        dao.getOfferAccepted(offerId, accepted = true, completed = false).executeAsOneOrNull()
             ?.run(::toOffer)
     }
 
-    private fun getOfferCompleted(offerId: Long) = offerDao.transactionWithResult {
-        offerDao.getOfferCompleted(offerId, true).executeAsOneOrNull()
+    private fun getOfferCompleted(offerId: Long) = dao.transactionWithResult {
+        dao.getOfferCompleted(offerId, true).executeAsOneOrNull()
             ?.run(::toOffer)
     }
 
@@ -130,9 +130,9 @@ class OfferRepository(
         error = HttpStatusCode.Unauthorized.description
     )
 
-    private fun addOffer(offer: Offer) = offerDao.transaction {
+    private fun addOffer(offer: Offer) = dao.transaction {
         offer.run {
-            offerDao.add(
+            dao.add(
                 id = id,
                 offerMakerId = offerMakerId,
                 offerReceiverId = offerReceiverId,
@@ -182,7 +182,7 @@ class OfferRepository(
                 acceptOfferApi.acceptOffer(jwtToken = jwtToken, offer.id).also {
                     it.acceptedOfferId?.let { acceptedOfferId ->
                         onlyTradeDB.transaction {
-                            offerDao.accept(true, acceptedOfferId)
+                            dao.accept(true, acceptedOfferId)
                             productDao.traded(true, offer.offerReceiverProduct.id)
                             offer.offeredProducts.forEach { offeredProduct ->
                                 productDao.traded(true, offeredProduct.id)
@@ -202,7 +202,7 @@ class OfferRepository(
             if (completed.not())
                 completeOfferApi.completeOffer(jwtToken, offer.id).also {
                     it.completedOfferId?.let { completedOfferId ->
-                        offerDao.transaction { offerDao.complete(true, completedOfferId) }
+                        dao.transaction { dao.complete(true, completedOfferId) }
                     } ?: deleteOffer(offer.id)
 
                 } else CompleteOfferResponse(HttpStatusCode.Accepted.value)
@@ -214,10 +214,10 @@ class OfferRepository(
     )
 
 
-    private fun addOffers(offers: List<Offer>) = offerDao.transaction {
+    private fun addOffers(offers: List<Offer>) = dao.transaction {
         offers.forEach { offer ->
             offer.run {
-                offerDao.add(
+                dao.add(
                     id = id,
                     offerMakerId = offerMakerId,
                     offerReceiverId = offerReceiverId,
@@ -235,14 +235,14 @@ class OfferRepository(
 
     private fun deleteOfferUpdateProduct(offerId: Long, offerReceiverProductId: Long) =
         onlyTradeDB.transaction {
-            offerDao.deleteById(offerId)
+            dao.deleteById(offerId)
             val product = productDao.getById(offerReceiverProductId).executeAsOne()
             val offers = product.offers?.run { Json.decodeFromString<List<Offer>>(this) }
                 ?.filterNot { it.id == offerId }?.run { Json.encodeToString(this) }
             productDao.updateOffers(offers, offerReceiverProductId)
         }
 
-    private fun deleteOffer(offerId: Long) = offerDao.transaction {
-        offerDao.deleteById(offerId)
+    private fun deleteOffer(offerId: Long) = dao.transaction {
+        dao.deleteById(offerId)
     }
 }

@@ -11,10 +11,12 @@ import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Loading
 import onlytrade.app.viewmodel.profile.ui.ProfileUiState.LoggedOut
 import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Success
 import onlytrade.app.viewmodel.profile.usecase.GetProfileUseCase
+import onlytrade.app.viewmodel.profile.usecase.GetUserDetailUseCase
 import onlytrade.app.viewmodel.profile.usecase.LogoutUseCase
 
-class ProfileViewModel (
+class ProfileViewModel(
     private val getProfileUseCase: GetProfileUseCase,
+    private val getUserDetailUseCase: GetUserDetailUseCase,
     private val logoutUseCase: LogoutUseCase
 
 ) : ViewModel() {
@@ -41,6 +43,7 @@ class ProfileViewModel (
                         phone = result.phone
                     )
                 }
+
                 is GetProfileUseCase.Result.Error -> {
                     uiState.value = Error(error = result.error)
                 }

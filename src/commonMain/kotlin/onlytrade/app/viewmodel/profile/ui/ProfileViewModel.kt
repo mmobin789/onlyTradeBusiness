@@ -5,17 +5,17 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import onlytrade.app.component.AppScope
-import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Error
+import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Idle
-import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Loading
+import onlytrade.app.viewmodel.profile.ui.ProfileUiState.LoadingKycStatus
 import onlytrade.app.viewmodel.profile.ui.ProfileUiState.LoggedOut
-import onlytrade.app.viewmodel.profile.ui.ProfileUiState.Success
-import onlytrade.app.viewmodel.profile.usecase.GetProfileUseCase
+import onlytrade.app.viewmodel.profile.ui.ProfileUiState.UserDetailApiError
+import onlytrade.app.viewmodel.profile.ui.ProfileUiState.VerifiedUser
 import onlytrade.app.viewmodel.profile.usecase.GetUserDetailUseCase
 import onlytrade.app.viewmodel.profile.usecase.LogoutUseCase
 
 class ProfileViewModel(
-    private val getProfileUseCase: GetProfileUseCase,
+    loginRepository: LoginRepository,
     private val getUserDetailUseCase: GetUserDetailUseCase,
     private val logoutUseCase: LogoutUseCase
 
@@ -24,38 +24,35 @@ class ProfileViewModel(
     var uiState: MutableStateFlow<ProfileUiState> = MutableStateFlow(Idle)
         private set
 
-    fun idle() {
-        uiState.value = Idle
+    val user = loginRepository.user()!!
+
+    init {
+        getUserDetails()
     }
 
-    private fun loading() {
-        uiState.value = Loading
-    }
-
-    fun getProfile() {
-        loading()
+    private fun getUserDetails() {
+        uiState.value = LoadingKycStatus
         viewModelScope.launch {
-            when (val result = getProfileUseCase()) {
-                is GetProfileUseCase.Result.OK -> {
-                    uiState.value = Success(
-                        name = result.name,
-                        email = result.email,
-                        phone = result.phone
-                    )
+            when (val result = getUserDetailUseCase(user.id)) {
+                is GetUserDetailUseCase.Result.Detail -> {
+
+                    uiState.value = if (result.user.verified) VerifiedUser else Idle
                 }
 
-                is GetProfileUseCase.Result.Error -> {
-                    uiState.value = Error(error = result.error)
-                }
+                is GetUserDetailUseCase.Result.Error -> UserDetailApiError(result.error)
             }
         }
     }
 
+    fun idle() {
+        uiState.value = Idle
+    }
+
     fun logOut() {
-        loading()
         AppScope.launch {
-            logoutUseCase()
             uiState.value = LoggedOut
+            logoutUseCase()
+
         }
     }
 

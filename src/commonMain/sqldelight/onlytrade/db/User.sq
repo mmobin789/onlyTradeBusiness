@@ -6,14 +6,15 @@ CREATE TABLE User (
     email TEXT,
     name TEXT,
     verified INTEGER AS Boolean NOT NULL,
+    loggedIn INTEGER AS Boolean NOT NULL,
     docs TEXT,
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL
 );
 
 insert:
-INSERT OR REPLACE INTO User(id,phone,email,name,verified,docs,createdAt,updatedAt)
-VALUES (?,?,?,?,?,?,?,?);
+INSERT OR REPLACE INTO User(id,phone,email,name,verified,loggedIn,docs,createdAt,updatedAt)
+VALUES (?,?,?,?,?,?,?,?,?);
 
 getById:
 SELECT * FROM User

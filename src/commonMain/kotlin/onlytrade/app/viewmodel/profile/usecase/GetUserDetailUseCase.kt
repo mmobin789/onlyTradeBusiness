@@ -3,23 +3,18 @@ package onlytrade.app.viewmodel.profile.usecase
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.withContext
 import onlytrade.app.IODispatcher
-import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.login.repository.UserRepository
 import onlytrade.app.viewmodel.login.repository.data.db.User
 
 class GetUserDetailUseCase(
-    private val loginRepository: LoginRepository,
     private val userRepository: UserRepository
 ) {
 
-    suspend operator fun invoke(): Result = withContext(IODispatcher) {
-        loginRepository.user()?.let { currentUser ->
-            userRepository.getUserDetail(currentUser.id).run {
-                if (statusCode == HttpStatusCode.OK.value && user != null) Result.Detail(user)
-                else Result.Error(error ?: "Something is wrong")
-            }
-        } ?: Result.Error("User not logged in")
-
+    suspend operator fun invoke(userId: Long): Result = withContext(IODispatcher) {
+        userRepository.getUserDetail(userId).run {
+            if (statusCode == HttpStatusCode.OK.value) Result.Detail(user!!)
+            else Result.Error(error ?: "Something is wrong")
+        }
     }
 
     sealed class Result {

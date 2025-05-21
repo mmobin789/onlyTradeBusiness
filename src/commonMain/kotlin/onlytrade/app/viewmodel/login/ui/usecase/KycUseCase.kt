@@ -3,11 +3,11 @@ package onlytrade.app.viewmodel.login.ui.usecase
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.withContext
 import onlytrade.app.IODispatcher
-import onlytrade.app.viewmodel.login.repository.LoginRepository
+import onlytrade.app.viewmodel.login.repository.UserRepository
 
-class KycUseCase(private val loginRepository: LoginRepository) {
+class KycUseCase(private val userRepository: UserRepository) {
     suspend operator fun invoke(docs: List<ByteArray>) = withContext(IODispatcher) {
-        loginRepository.uploadDocs(docs).run {
+        userRepository.uploadDocs(docs).run {
             if (statusCode == HttpStatusCode.Accepted.value) // docs processing for review.
                 Result.DocsInReview
             else Result.Error(error = error ?: "Something went wrong.")

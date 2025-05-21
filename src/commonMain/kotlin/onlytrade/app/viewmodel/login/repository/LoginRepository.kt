@@ -2,7 +2,7 @@ package onlytrade.app.viewmodel.login.repository
 
 import com.russhwolf.settings.Settings
 import io.ktor.http.HttpStatusCode
-import kotlinx.serialization.json.Json
+import onlytrade.app.AppConfig.Json
 import onlytrade.app.viewmodel.login.repository.data.LoginConst.JWT_TOKEN
 import onlytrade.app.viewmodel.login.repository.data.LoginConst.JWT_USER
 import onlytrade.app.viewmodel.login.repository.data.db.User

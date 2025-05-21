@@ -1,9 +1,9 @@
 package onlytrade.app.viewmodel.home.ui
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import onlytrade.app.component.AppScope
 import onlytrade.app.viewmodel.home.ui.HomeUiState.GetProductsApiError
 import onlytrade.app.viewmodel.home.ui.HomeUiState.Idle
 import onlytrade.app.viewmodel.home.ui.HomeUiState.LoadingProducts
@@ -56,7 +56,7 @@ class HomeViewModel(
 
         uiState.value = LoadingProducts
 
-        AppScope.launch {
+        viewModelScope.launch {
             when (val result =
                 getProductsUseCase(
                     pageNo = productsPageNo,

@@ -14,10 +14,12 @@ import onlytrade.app.viewmodel.product.offer.ui.usecase.AcceptOfferUseCase
 import onlytrade.app.viewmodel.product.offer.ui.usecase.CompleteOfferUseCase
 import onlytrade.app.viewmodel.product.offer.ui.usecase.RejectOfferUseCase
 import onlytrade.app.viewmodel.product.offer.ui.usecase.WithdrawOfferUseCase
+import onlytrade.app.viewmodel.profile.usecase.GetUserDetailUseCase
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.AcceptingOffer
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.CompletingOffer
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.Idle
+import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.LoadUserDetail
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.LoadingOfferMade
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.LoadingOfferReceived
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferAcceptApiError
@@ -32,6 +34,8 @@ import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferNotReceiv
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferReceived
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.OfferRejected
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.RejectingOffer
+import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.UserDetail
+import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.UserDetailApiError
 import onlytrade.app.viewmodel.trades.ui.state.TradeDetailUiState.WithdrawingOffer
 
 class TradeDetailViewModel(
@@ -39,6 +43,7 @@ class TradeDetailViewModel(
     private val rejectOfferUseCase: RejectOfferUseCase,
     private val acceptOfferUseCase: AcceptOfferUseCase,
     private val completeOfferUseCase: CompleteOfferUseCase,
+    private val getUserDetailUseCase: GetUserDetailUseCase,
     loginRepository: LoginRepository,
     private val offerRepository: OfferRepository
 ) : ViewModel() {
@@ -116,6 +121,17 @@ class TradeDetailViewModel(
                 CompleteOfferUseCase.Result.OfferCompleted -> OfferCompleted
                 CompleteOfferUseCase.Result.OfferNotFound -> OfferDeleted // this won't happen.
                 is CompleteOfferUseCase.Result.Error -> OfferCompleteApiError(result.error)
+            }
+        }
+    }
+
+    fun getUserDetails(userId: Long) {
+        uiState.value = LoadUserDetail
+        viewModelScope.launch {
+            uiState.value = when (val result = getUserDetailUseCase(userId)) {
+                is GetUserDetailUseCase.Result.Detail -> UserDetail(result.user)
+                is GetUserDetailUseCase.Result.Error -> UserDetailApiError(result.error)
+
             }
         }
     }

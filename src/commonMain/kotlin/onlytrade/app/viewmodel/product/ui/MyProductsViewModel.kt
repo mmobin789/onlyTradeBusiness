@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import onlytrade.app.viewmodel.home.ui.usecase.GetProductsUseCase
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.repository.data.db.Product
+import onlytrade.app.viewmodel.product.ui.nav.ProductDetailNav
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.GetProductsApiError
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.Idle
@@ -18,7 +19,7 @@ class MyProductsViewModel(
     private val loginRepository: LoginRepository
 ) : ViewModel() {
 
-    val pickedProductIds = linkedSetOf<Long>()
+    private val pickedProductIds = linkedSetOf<Long>()
 
     var uiState: MutableStateFlow<MyProductsUiState> = MutableStateFlow(Idle)
         private set
@@ -41,6 +42,13 @@ class MyProductsViewModel(
      */
     fun idle() {
         uiState.value = Idle
+    }
+
+    fun sendOfferedProducts() {
+        if (pickedProductIds.isEmpty()) return
+        viewModelScope.launch {
+            ProductDetailNav.emit(ProductDetailNav.Event.TradeProducts(pickedProductIds))
+        }
     }
 
 

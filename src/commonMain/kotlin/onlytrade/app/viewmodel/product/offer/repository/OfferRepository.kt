@@ -150,7 +150,7 @@ class OfferRepository(
         loginRepository.jwtToken()?.let { jwtToken ->
             getOfferMade(offerMakerId, offerReceiverProductId)?.let { offer ->
                 deleteOfferApi.deleteOffer(jwtToken, offer.id).also {
-                    if (it.deletedOfferId != null || it.statusCode == HttpStatusCode.NotFound.value) {
+                    if (it.deletedOfferId != null || it.statusCode == HttpStatusCode.NotFound.value || it.statusCode == HttpStatusCode.OK.value) {
                         deleteOfferUpdateProduct(offer.id, offerReceiverProductId)
                     }
                 }

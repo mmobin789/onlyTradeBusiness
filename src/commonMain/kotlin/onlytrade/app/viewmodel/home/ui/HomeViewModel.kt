@@ -18,6 +18,8 @@ class HomeViewModel(
     private val loginRepository: LoginRepository
 ) : ViewModel() {
 
+    private var refreshHome = false
+
     var uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(Idle)
         private set
 
@@ -34,12 +36,31 @@ class HomeViewModel(
 
     val isUserLoggedIn = loginRepository.isUserLoggedIn()
 
+    init {
+        viewModelScope.launch {
+            HomeNav.events.collect { event ->
+                when (event) {
+                    HomeNav.Event.RefreshHome -> refreshHome = true
+                }
+            }
+        }
+    }
+
     /**
      * This would only reset the non-paginated UI state flow.
      * namely uiState not ProductsList.
      */
     fun idle() {
         uiState.value = Idle
+    }
+
+    fun refreshHomePage() {
+        if (refreshHome) {
+            refreshHome = false
+            removeLoadedPage()
+            productList.value = emptyList()
+            getProducts()
+        }
     }
 
 

@@ -7,10 +7,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import onlytrade.app.IODispatcher
 import onlytrade.app.component.AppScope
+import onlytrade.app.viewmodel.home.ui.HomeNav
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
 import onlytrade.app.viewmodel.product.offer.ui.usecase.WithdrawOfferUseCase
 import onlytrade.app.viewmodel.product.repository.data.db.Product
+import onlytrade.app.viewmodel.product.ui.nav.ProductDetailNav
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.GuestUser
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.Idle
@@ -41,10 +43,27 @@ class ProductDetailViewModel(
 
     private val user = loginRepository.user()
 
+    private lateinit var offeredProductIds: LinkedHashSet<Long>
+
+    init {
+        viewModelScope.launch {
+            ProductDetailNav.events.collect { event ->
+                when (event) {
+                    is ProductDetailNav.Event.TradeProducts -> {
+                        offeredProductIds = event.productIds
+                    }
+                }
+            }
+        }
+    }
+
     fun idle() {
         uiState.value = Idle
     }
 
+    private fun refreshHomeScreen() {
+        viewModelScope.launch { HomeNav.emit(HomeNav.Event.RefreshHome) }
+    }
 
     fun checkOffer(product: Product) {
 
@@ -73,6 +92,7 @@ class ProductDetailViewModel(
                 WithdrawOfferUseCase.Result.OfferNotFound -> OfferRejected
                 is WithdrawOfferUseCase.Result.Error -> OfferDeleteApiError(result.error)
             }
+            refreshHomeScreen()
         }
     }
 
@@ -111,10 +131,14 @@ class ProductDetailViewModel(
         }
     }
 
-    fun makeOffer(productId: Long, offerReceiverId: Long, offeredProductIds: LinkedHashSet<Long>) {
+    fun makeOffer(productId: Long, offerReceiverId: Long) {
+        if (::offeredProductIds.isInitialized.not() || offeredProductIds.isEmpty())
+            return
+
+        uiState.value = MakingOffer
 
         AppScope.launch {
-            uiState.value = MakingOffer
+
             uiState.value = when (val result = offerUseCase(
                 offerReceiverId = offerReceiverId,
                 offerReceiverProductId = productId,
@@ -122,7 +146,9 @@ class ProductDetailViewModel(
             )) {
                 OfferUseCase.Result.OffersExceeded -> OffersExceeded
                 is OfferUseCase.Result.Error -> MakeOfferFail
-                is OfferUseCase.Result.OfferMade -> OfferMade(result.offer)
+                is OfferUseCase.Result.OfferMade -> OfferMade(result.offer).apply {
+                    offeredProductIds.clear()
+                }
             }
         }
     }

@@ -12,9 +12,11 @@ import onlytrade.app.viewmodel.product.offer.repository.data.db.Offer
 import onlytrade.app.viewmodel.product.repository.data.ProductMapper.toProduct
 import onlytrade.app.viewmodel.product.repository.data.db.Product
 import onlytrade.app.viewmodel.product.repository.data.remote.api.AddProductApi
+import onlytrade.app.viewmodel.product.repository.data.remote.api.DeleteProductApi
 import onlytrade.app.viewmodel.product.repository.data.remote.api.GetProductsApi
 import onlytrade.app.viewmodel.product.repository.data.remote.request.AddProductRequest
 import onlytrade.app.viewmodel.product.repository.data.remote.response.AddProductResponse
+import onlytrade.app.viewmodel.product.repository.data.remote.response.DeleteProductResponse
 import onlytrade.app.viewmodel.product.repository.data.remote.response.GetProductsResponse
 import onlytrade.db.OnlyTradeDB
 
@@ -22,8 +24,9 @@ class ProductRepository(
     private val loginRepository: LoginRepository,
     private val addProductApi: AddProductApi,
     private val getProductsApi: GetProductsApi,
+    private val deleteProductApi: DeleteProductApi,
     private val localPrefs: Settings,
-    onlyTradeDB: OnlyTradeDB
+    private val onlyTradeDB: OnlyTradeDB
 ) {
     private val productsLastUpdatedAt = "PRODUCTS_LAST_UPDATED_AT"
 
@@ -38,6 +41,21 @@ class ProductRepository(
             statusCode = HttpStatusCode.Unauthorized.value,
             error = HttpStatusCode.Unauthorized.description
         )
+
+    //todo need to create use-case impl.
+    suspend fun deleteProduct(id: Long) = loginRepository.jwtToken()?.let { jwtToken ->
+        dao.transactionWithResult { dao.getById(id).executeAsOneOrNull() }?.let { product ->
+            deleteProductApi.deleteProduct(jwtToken = jwtToken, product.id).also {
+                it.deletedProductId?.let { productId ->
+                    deleteLocalProduct(productId)
+                } ?: deleteLocalProduct(id)
+            }
+        } ?: DeleteProductResponse(HttpStatusCode.OK.value)
+
+    } ?: DeleteProductResponse(
+        statusCode = HttpStatusCode.Unauthorized.value,
+        error = HttpStatusCode.Unauthorized.description
+    )
 
     suspend fun getProducts(
         pageNo: Int, pageSize: Int, userId: Long? = null
@@ -94,12 +112,11 @@ class ProductRepository(
      * Do not call this from main thread.
      * Blocking synchronous operation.
      */
-    private fun deleteProductsAndOffers() {
-        dao.transaction {
-            dao.deleteAll()
-            offerDao.deleteAll()
-        }
+    private fun deleteProductsAndOffers() = onlyTradeDB.transaction {
+        dao.deleteAll()
+        offerDao.deleteAll()
     }
+
 
     /**
      * method to batch insert products with offers into local db.
@@ -145,25 +162,27 @@ class ProductRepository(
         }
     }
 
+    private fun deleteLocalProduct(id: Long) = dao.transaction { dao.deleteById(id) }
+
     /**
      * method to insert product into local db.
      * DO NOT call this from main thread.
      */
-    private fun addProduct(product: Product) = dao.transaction {
-        product.run {
-            dao.insert(
-                id = id,
-                categoryId = categoryId,
-                subcategoryId = subcategoryId,
-                userId = userId,
-                name = name,
-                description = description,
-                estPrice = estPrice,
-                imageUrls = imageUrls.joinToString(","),
-                traded = traded,
-                offers = offers?.let { Json.encodeToString(it) }
-            )
-        }
-    }
+    /*   private fun addProduct(product: Product) = dao.transaction {
+           product.run {
+               dao.insert(
+                   id = id,
+                   categoryId = categoryId,
+                   subcategoryId = subcategoryId,
+                   userId = userId,
+                   name = name,
+                   description = description,
+                   estPrice = estPrice,
+                   imageUrls = imageUrls.joinToString(","),
+                   traded = traded,
+                   offers = offers?.let { Json.encodeToString(it) }
+               )
+           }
+       }*/
 
 }

@@ -50,5 +50,8 @@ getProductsByIds:
 SELECT * FROM Product
 WHERE id IN ?;
 
+deleteById:
+DELETE FROM Product WHERE id = ?;
+
 deleteAll:
 DELETE FROM Product;

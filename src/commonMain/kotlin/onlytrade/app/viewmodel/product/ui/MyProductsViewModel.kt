@@ -4,18 +4,25 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import onlytrade.app.component.AppScope
 import onlytrade.app.viewmodel.home.ui.usecase.GetProductsUseCase
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.repository.data.db.Product
-import onlytrade.app.viewmodel.product.ui.nav.ProductDetailNav
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.AddOfferApiError
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.GetProductsApiError
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.Idle
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.LoadingProducts
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.MakingOffer
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.OfferMade
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.OffersExceeded
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.ProductsNotFound
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.SelectionActive
+import onlytrade.app.viewmodel.product.ui.usecase.OfferUseCase
 
 class MyProductsViewModel(
     private val getProductsUseCase: GetProductsUseCase,
+    private val offerUseCase: OfferUseCase,
     private val loginRepository: LoginRepository
 ) : ViewModel() {
 
@@ -44,14 +51,6 @@ class MyProductsViewModel(
         uiState.value = Idle
     }
 
-    fun sendOfferedProducts() {
-        if (pickedProductIds.isEmpty()) return
-        viewModelScope.launch {
-            ProductDetailNav.emit(ProductDetailNav.Event.TradeProducts(pickedProductIds))
-        }
-    }
-
-
     fun getProducts() {
 
         /**
@@ -60,8 +59,6 @@ class MyProductsViewModel(
         if (loadedPages.add(productsPageNo).not() || productsNotFound) {
             return
         }
-
-
 
         uiState.value = LoadingProducts
 
@@ -104,13 +101,48 @@ class MyProductsViewModel(
         }
     }
 
+    fun makeOffer(productId: Long, offerReceiverId: Long) {
+
+        if (pickedProductIds.isEmpty())
+            return
+
+        uiState.value = MakingOffer
+
+        AppScope.launch {
+
+            uiState.value = when (val result = offerUseCase(
+                offerReceiverId = offerReceiverId,
+                offerReceiverProductId = productId,
+                offeredProductIds = pickedProductIds,
+            )) {
+                OfferUseCase.Result.OffersExceeded -> {
+                    OffersExceeded
+                }
+
+                is OfferUseCase.Result.Error -> {
+                    AddOfferApiError(result.error)
+                }
+
+                is OfferUseCase.Result.OfferMade -> {
+                    OfferMade(result.offer)
+                }
+
+            }
+        }
+    }
+
     private fun removeLoadedPage() = loadedPages.remove(productsPageNo)
 
     fun selectProduct(id: Long): Boolean {
         if (pickedProductIds.add(id).not()) {
             pickedProductIds.remove(id)
+
+            if (pickedProductIds.isEmpty())
+                uiState.value = Idle
+
             return false
         }
+        uiState.value = SelectionActive
         return true
     }
 

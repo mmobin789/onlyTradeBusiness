@@ -80,12 +80,12 @@ class AddProductViewModel(private val addProductUseCase: AddProductUseCase) : Vi
             return
         }
 
-        if (images.size < 4) {
+        if (images.size < 3) {
             uiState.value = LessImagesSelected
             return
         }
 
-        if (images.size > 9) {
+        if (images.size > 6) {
             uiState.value = MoreImagesSelected
             return
         }

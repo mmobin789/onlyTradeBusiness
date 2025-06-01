@@ -9,7 +9,8 @@ CREATE TABLE Offer (
     offeredProducts TEXT NOT NULL,
     extraPrice REAL NOT NULL,
     accepted INTEGER AS Boolean NOT NULL,
-    completed INTEGER AS Boolean NOT NULL
+    completed INTEGER AS Boolean NOT NULL,
+    UNIQUE (offerMakerId, offerReceiverProductId)
 );
 
 add:

@@ -13,6 +13,7 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import onlytrade.app.AppConfig
+import onlytrade.app.AppConfig.Json
 import onlytrade.app.viewmodel.home.di.homeModule
 import onlytrade.app.viewmodel.login.di.loginModule
 import onlytrade.app.viewmodel.product.di.addProductModule
@@ -50,7 +51,7 @@ object OTBusinessModule {
                         socketTimeoutMillis = 120000   // 120 seconds
                     }
                     install(ContentNegotiation) {
-                        json()
+                        json(Json)
                     }
                     install(Logging) {
                         logger = object : Logger {

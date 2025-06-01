@@ -4,15 +4,16 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import onlytrade.app.component.AppScope
-import onlytrade.app.viewmodel.login.ui.LoginUiState.BlankEmailInputError
-import onlytrade.app.viewmodel.login.ui.LoginUiState.BlankFormError
-import onlytrade.app.viewmodel.login.ui.LoginUiState.BlankMobileInputError
-import onlytrade.app.viewmodel.login.ui.LoginUiState.BlankPwdInputError
-import onlytrade.app.viewmodel.login.ui.LoginUiState.EmailFormatInputError
-import onlytrade.app.viewmodel.login.ui.LoginUiState.Idle
-import onlytrade.app.viewmodel.login.ui.LoginUiState.Loading
-import onlytrade.app.viewmodel.login.ui.LoginUiState.MobileNoFormatInputError
-import onlytrade.app.viewmodel.login.ui.LoginUiState.SmallPwdInputError
+import onlytrade.app.viewmodel.login.ui.state.LoginUiState
+import onlytrade.app.viewmodel.login.ui.state.LoginUiState.BlankEmailInputError
+import onlytrade.app.viewmodel.login.ui.state.LoginUiState.BlankFormError
+import onlytrade.app.viewmodel.login.ui.state.LoginUiState.BlankMobileInputError
+import onlytrade.app.viewmodel.login.ui.state.LoginUiState.BlankPwdInputError
+import onlytrade.app.viewmodel.login.ui.state.LoginUiState.EmailFormatInputError
+import onlytrade.app.viewmodel.login.ui.state.LoginUiState.Idle
+import onlytrade.app.viewmodel.login.ui.state.LoginUiState.Loading
+import onlytrade.app.viewmodel.login.ui.state.LoginUiState.MobileNoFormatInputError
+import onlytrade.app.viewmodel.login.ui.state.LoginUiState.SmallPwdInputError
 import onlytrade.app.viewmodel.login.ui.usecase.EmailLoginUseCase
 import onlytrade.app.viewmodel.login.ui.usecase.PhoneLoginUseCase
 
@@ -24,20 +25,22 @@ class LoginViewModel(
     var uiState: MutableStateFlow<LoginUiState> = MutableStateFlow(Idle)
         private set
 
-    private val pakistaniMobileNoRegex = Regex("^((\\+92)?(92)?(0)?)(3)([0-9]{9})")
+    companion object {
+        val pakistaniMobileNoRegex = Regex("^((\\+92)?(92)?(0)?)(3)([0-9]{9})")
 
-    /**
-     * Email address pattern, same as android.
-     */
-    private val emailAddressRegex = Regex(
-        "[a-zA-Z0-9+._%\\-]{1,256}" +
-                "@" +
-                "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
-                "(" +
-                "\\." +
-                "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
-                ")+"
-    )
+        /**
+         * Email address pattern, same as android.
+         */
+        val emailAddressRegex = Regex(
+            "[a-zA-Z0-9+._%\\-]{1,256}" +
+                    "@" +
+                    "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
+                    "(" +
+                    "\\." +
+                    "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
+                    ")+"
+        )
+    }
 
     fun idle() {
         uiState.value = Idle

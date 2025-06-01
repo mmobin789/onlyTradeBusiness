@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import onlytrade.app.IODispatcher
 import onlytrade.app.component.AppScope
+import onlytrade.app.viewmodel.home.ui.HomeNav
 import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.offer.repository.OfferRepository
 import onlytrade.app.viewmodel.product.offer.ui.usecase.WithdrawOfferUseCase
@@ -16,8 +17,6 @@ import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.GuestUser
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.Idle
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.LoadingOfferMade
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.LoadingOfferReceived
-import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MakeOfferFail
-import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.MakingOffer
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferDeleteApiError
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferMade
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferNotMade
@@ -25,12 +24,9 @@ import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferNotRec
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferReceived
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferRejected
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OfferWithdrawn
-import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.OffersExceeded
 import onlytrade.app.viewmodel.product.ui.state.ProductDetailUiState.WithdrawingOffer
-import onlytrade.app.viewmodel.product.ui.usecase.OfferUseCase
 
 class ProductDetailViewModel(
-    private val offerUseCase: OfferUseCase,
     private val withdrawOfferUseCase: WithdrawOfferUseCase,
     private val loginRepository: LoginRepository,
     private val offerRepository: OfferRepository
@@ -39,12 +35,17 @@ class ProductDetailViewModel(
     var uiState: MutableStateFlow<ProductDetailUiState> = MutableStateFlow(Idle)
         private set
 
+
     private val user = loginRepository.user()
+
 
     fun idle() {
         uiState.value = Idle
     }
 
+    private fun refreshHomeScreen() {
+        viewModelScope.launch { HomeNav.emit(HomeNav.Event.RefreshHome) }
+    }
 
     fun checkOffer(product: Product) {
 
@@ -73,6 +74,7 @@ class ProductDetailViewModel(
                 WithdrawOfferUseCase.Result.OfferNotFound -> OfferRejected
                 is WithdrawOfferUseCase.Result.Error -> OfferDeleteApiError(result.error)
             }
+            refreshHomeScreen()
         }
     }
 
@@ -107,22 +109,6 @@ class ProductDetailViewModel(
             }.let { offer ->
                 uiState.value =
                     if (offer == null) OfferNotReceived else OfferReceived
-            }
-        }
-    }
-
-    fun makeOffer(productId: Long, offerReceiverId: Long, offeredProductIds: LinkedHashSet<Long>) {
-
-        AppScope.launch {
-            uiState.value = MakingOffer
-            uiState.value = when (val result = offerUseCase(
-                offerReceiverId = offerReceiverId,
-                offerReceiverProductId = productId,
-                offeredProductIds = offeredProductIds,
-            )) {
-                OfferUseCase.Result.OffersExceeded -> OffersExceeded
-                is OfferUseCase.Result.Error -> MakeOfferFail
-                is OfferUseCase.Result.OfferMade -> OfferMade(result.offer)
             }
         }
     }

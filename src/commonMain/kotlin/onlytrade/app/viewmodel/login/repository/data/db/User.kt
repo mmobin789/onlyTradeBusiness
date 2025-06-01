@@ -7,8 +7,10 @@ data class User(
     val id: Long,
     val phone: String?,
     val email: String?,
-    val password: String,
+    val password: String?,
     val name: String?,
     val verified: Boolean,
-    val loggedIn: Boolean
+    val docs: String?,
+    val createdAt: String,
+    val updatedAt: String,
 )

@@ -1,11 +1,11 @@
 package onlytrade.app.viewmodel.login.repository
 
 import com.russhwolf.settings.Settings
-import kotlinx.serialization.json.Json
+import onlytrade.app.AppConfig.Json
 import onlytrade.app.viewmodel.login.repository.data.LoginConst.JWT_TOKEN
 import onlytrade.app.viewmodel.login.repository.data.LoginConst.JWT_USER
 import onlytrade.app.viewmodel.login.repository.data.db.User
-import onlytrade.app.viewmodel.login.repository.data.remote.LoginApi
+import onlytrade.app.viewmodel.login.repository.data.remote.api.LoginApi
 import onlytrade.app.viewmodel.login.repository.data.remote.model.response.LoginResponse
 import onlytrade.db.OnlyTradeDB
 
@@ -44,6 +44,8 @@ class LoginRepository(
 
     fun logOut() {
         localPrefs.clear()
+        user = null
+        jwtToken = null
         onlyTradeDB.run {
             transaction {
                 onlyTradeDB.productQueries.deleteAll()

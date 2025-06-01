@@ -1,9 +1,9 @@
 package onlytrade.app.viewmodel.home.ui
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import onlytrade.app.component.AppScope
 import onlytrade.app.viewmodel.home.ui.HomeUiState.GetProductsApiError
 import onlytrade.app.viewmodel.home.ui.HomeUiState.Idle
 import onlytrade.app.viewmodel.home.ui.HomeUiState.LoadingProducts
@@ -17,6 +17,8 @@ class HomeViewModel(
     private val getProductsUseCase: GetProductsUseCase,
     private val loginRepository: LoginRepository
 ) : ViewModel() {
+
+    private var refreshHome = false
 
     var uiState: MutableStateFlow<HomeUiState> = MutableStateFlow(Idle)
         private set
@@ -34,12 +36,31 @@ class HomeViewModel(
 
     val isUserLoggedIn = loginRepository.isUserLoggedIn()
 
+    init {
+        viewModelScope.launch {
+            HomeNav.events.collect { event ->
+                when (event) {
+                    HomeNav.Event.RefreshHome -> refreshHome = true
+                }
+            }
+        }
+    }
+
     /**
      * This would only reset the non-paginated UI state flow.
      * namely uiState not ProductsList.
      */
     fun idle() {
         uiState.value = Idle
+    }
+
+    fun refreshHomePage() {
+        if (refreshHome) {
+            refreshHome = false
+            removeLoadedPage()
+            productList.value = emptyList()
+            getProducts()
+        }
     }
 
 
@@ -56,7 +77,7 @@ class HomeViewModel(
 
         uiState.value = LoadingProducts
 
-        AppScope.launch {
+        viewModelScope.launch {
             when (val result =
                 getProductsUseCase(
                     pageNo = productsPageNo,

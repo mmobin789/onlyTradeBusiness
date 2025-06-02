@@ -36,13 +36,21 @@ WHERE id = ?;
 
 selectPaged:
 SELECT * FROM Product
-WHERE traded = ?
 ORDER BY id DESC
+LIMIT ? OFFSET ?;
+
+deletePaged:
+DELETE FROM Product
+LIMIT ? OFFSET ?;
+
+deleteUserPaged:
+DELETE FROM Product
+WHERE userId = ?
 LIMIT ? OFFSET ?;
 
 selectUsersPaged:
 SELECT * FROM Product
-WHERE userId = ? AND traded = ?
+WHERE userId = ?
 ORDER BY id DESC
 LIMIT ? OFFSET ?;
 

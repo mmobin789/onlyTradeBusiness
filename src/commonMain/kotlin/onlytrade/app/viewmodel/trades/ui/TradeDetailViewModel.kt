@@ -118,7 +118,10 @@ class TradeDetailViewModel(
         uiState.value = CompletingOffer
         AppScope.launch {
             uiState.value = when (val result = completeOfferUseCase(offer)) {
-                CompleteOfferUseCase.Result.OfferCompleted -> OfferCompleted
+                CompleteOfferUseCase.Result.OfferCompleted -> {
+                    MyTradesNav.emit(MyTradesNav.Event.RefreshMyTrades)
+                    OfferCompleted
+                }
                 CompleteOfferUseCase.Result.OfferNotFound -> OfferDeleted // this won't happen.
                 is CompleteOfferUseCase.Result.Error -> OfferCompleteApiError(result.error)
             }

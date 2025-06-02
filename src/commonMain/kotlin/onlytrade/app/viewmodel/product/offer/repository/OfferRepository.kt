@@ -64,7 +64,7 @@ class OfferRepository(
             getOffersApi()
         } else {
             val localOffers = dao.transactionWithResult {
-                dao.getOffers(false).executeAsList().map(::toOffer)
+                dao.getOffers(completed = false).executeAsList().map(::toOffer)
             }
             if (localOffers.isEmpty()) {
                 getOffersApi()
@@ -83,7 +83,7 @@ class OfferRepository(
         }
 
     /**
-     * The returns the 1st offer received by the user.
+     * The returns the offer received by the user for the matching product.
      * This method is offline only.
      */
     fun getOfferReceived(offerReceiverId: Long, offerReceiverProductId: Long) =
@@ -97,11 +97,11 @@ class OfferRepository(
             ?.run(::toOffer)
     }
 
-    private fun getOfferCompleted(offerId: Long) = dao.transactionWithResult {
-        dao.getOfferCompleted(offerId, true).executeAsOneOrNull()
-            ?.run(::toOffer)
-    }
-
+    /*   private fun getOfferCompleted(offerId: Long) = dao.transactionWithResult {
+           dao.getOfferCompleted(offerId, true).executeAsOneOrNull()
+               ?.run(::toOffer)
+       }
+   */
     suspend fun addOffer(
         offerReceiverId: Long, offerReceiverProductId: Long, offeredProductIds: LinkedHashSet<Long>
     ) = loginRepository.jwtToken()?.let { jwtToken ->
@@ -198,7 +198,7 @@ class OfferRepository(
     )
 
     suspend fun completeOffer(offer: Offer) = loginRepository.jwtToken()?.let { jwtToken ->
-        getOfferReceived(offer.offerReceiverId, offer.offerReceiverProduct.id)?.run {
+        getOfferAccepted(offer.id)?.run {
             if (completed.not())
                 completeOfferApi.completeOffer(jwtToken, offer.id).also {
                     it.completedOfferId?.let { completedOfferId ->

@@ -41,12 +41,18 @@ LIMIT ? OFFSET ?;
 
 deletePaged:
 DELETE FROM Product
-LIMIT ? OFFSET ?;
+WHERE id IN (
+    SELECT id FROM Product
+    LIMIT ? OFFSET ?
+);
 
 deleteUserPaged:
 DELETE FROM Product
-WHERE userId = ?
-LIMIT ? OFFSET ?;
+WHERE id IN (
+    SELECT id FROM Product
+    WHERE userId = ?
+    LIMIT ? OFFSET ?
+);
 
 selectUsersPaged:
 SELECT * FROM Product

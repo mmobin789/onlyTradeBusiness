@@ -12,4 +12,8 @@ sealed class MyProductsUiState {
     data object MakingOffer : MyProductsUiState()
     data object OffersExceeded : MyProductsUiState()
     data class AddOfferApiError(val error: String) : MyProductsUiState()
+    data object DeletingProduct : MyProductsUiState()
+    data object ProductInTrade : MyProductsUiState()
+    data object ProductDeleted : MyProductsUiState()
+    data class DeleteProductApiError(val error: String) : MyProductsUiState()
 }

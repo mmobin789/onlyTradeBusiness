@@ -42,16 +42,12 @@ class ProductRepository(
             error = HttpStatusCode.Unauthorized.description
         )
 
-    //todo need to create use-case impl.
     suspend fun deleteProduct(id: Long) = loginRepository.jwtToken()?.let { jwtToken ->
-        dao.transactionWithResult { dao.getById(id).executeAsOneOrNull() }?.let { product ->
-            deleteProductApi.deleteProduct(jwtToken = jwtToken, product.id).also {
-                it.deletedProductId?.let { productId ->
-                    deleteLocalProduct(productId)
-                } ?: deleteLocalProduct(id)
-            }
-        } ?: DeleteProductResponse(HttpStatusCode.OK.value)
-
+        deleteProductApi.deleteProduct(jwtToken = jwtToken, id).also {
+            it.deletedProductId?.let { productId ->
+                deleteLocalProduct(productId)
+            } ?: deleteLocalProduct(id)
+        }
     } ?: DeleteProductResponse(
         statusCode = HttpStatusCode.Unauthorized.value,
         error = HttpStatusCode.Unauthorized.description
@@ -115,7 +111,7 @@ class ProductRepository(
 
 
     /**
-     * method to delete all products and offers from local db.
+     * method to delete pages of products and all offers from local db.
      * Do not call this from main thread.
      * Blocking synchronous operation.
      */

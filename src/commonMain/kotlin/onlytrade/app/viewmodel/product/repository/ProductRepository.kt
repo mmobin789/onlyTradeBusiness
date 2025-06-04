@@ -1,5 +1,6 @@
 package onlytrade.app.viewmodel.product.repository
 
+import androidx.compose.ui.util.fastForEach
 import com.russhwolf.settings.Settings
 import io.ktor.http.HttpStatusCode
 import kotlinx.datetime.Clock
@@ -31,7 +32,7 @@ class ProductRepository(
     private val productsLastUpdatedAt = "PRODUCTS_LAST_UPDATED_AT"
 
     private val dao = onlyTradeDB.productQueries
-
+    private val offerProductDao = onlyTradeDB.offerProductQueries
     private val offerDao = onlyTradeDB.offerQueries
 
     suspend fun addProduct(addProductRequest: AddProductRequest) =
@@ -136,7 +137,7 @@ class ProductRepository(
      */
     private fun addProductsAndOffers(products: List<Product>) {
         dao.transaction {
-            products.forEach { product ->
+            products.fastForEach { product ->
                 product.run {
                     dao.insert(
                         id = id,
@@ -166,11 +167,14 @@ class ProductRepository(
                 offerReceiverId = offerReceiverId,
                 offerReceiverProductId = offerReceiverProduct.id,
                 offerReceiverProduct = Json.encodeToString(offerReceiverProduct),
-                offeredProducts = Json.encodeToString(offeredProducts),
                 extraPrice = extraPrice,
                 accepted = accepted,
                 completed = completed
             )
+
+            offeredProducts.fastForEach {
+                offerProductDao.add(it.id, id)
+            }
         }
     }
 

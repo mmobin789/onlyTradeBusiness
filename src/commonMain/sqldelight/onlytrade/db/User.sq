@@ -19,3 +19,6 @@ VALUES (?,?,?,?,?,?,?,?,?);
 getById:
 SELECT * FROM User
 WHERE id = ?;
+
+deleteAll:
+DELETE FROM User;

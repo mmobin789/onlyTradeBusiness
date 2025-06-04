@@ -6,7 +6,6 @@ CREATE TABLE Offer (
     offerReceiverId INTEGER NOT NULL,
     offerReceiverProductId INTEGER NOT NULL,
     offerReceiverProduct TEXT NOT NULL,
-    offeredProducts TEXT NOT NULL,
     extraPrice REAL NOT NULL,
     accepted INTEGER AS Boolean NOT NULL,
     completed INTEGER AS Boolean NOT NULL,
@@ -14,13 +13,9 @@ CREATE TABLE Offer (
 );
 
 add:
-INSERT OR REPLACE INTO Offer(id,offerMakerId,offerReceiverId,offerReceiverProductId,offerReceiverProduct,offeredProducts,extraPrice,accepted,completed)
-VALUES (?, ?,?,?,?,?,?,?,? );
+INSERT OR REPLACE INTO Offer(id,offerMakerId,offerReceiverId,offerReceiverProductId,offerReceiverProduct,extraPrice,accepted,completed)
+VALUES (?, ?,?,?,?,?,?,?);
 
-
-getById:
-SELECT * FROM Offer
-WHERE id = ?;
 
 getOffers:
 SELECT * FROM Offer
@@ -37,10 +32,6 @@ WHERE offerReceiverId = ? AND offerReceiverProductId = ?;
 getOfferAccepted:
 SELECT * FROM Offer
 WHERE id = ? AND accepted = ? AND completed = ?;
-
-getOfferCompleted:
-SELECT * FROM Offer
-WHERE id = ? AND completed = ?;
 
 accept:
 UPDATE Offer

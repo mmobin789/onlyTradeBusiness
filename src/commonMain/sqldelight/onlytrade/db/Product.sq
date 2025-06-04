@@ -34,6 +34,10 @@ getById:
 SELECT * FROM Product
 WHERE id = ?;
 
+getProducts:
+SELECT * FROM Product WHERE id IN ?;
+
+
 selectPaged:
 SELECT * FROM Product
 ORDER BY id DESC
@@ -59,10 +63,6 @@ SELECT * FROM Product
 WHERE userId = ?
 ORDER BY id DESC
 LIMIT ? OFFSET ?;
-
-getProductsByIds:
-SELECT * FROM Product
-WHERE id IN ?;
 
 deleteById:
 DELETE FROM Product WHERE id = ?;

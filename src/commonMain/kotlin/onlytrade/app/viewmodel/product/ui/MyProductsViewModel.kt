@@ -38,7 +38,7 @@ class MyProductsViewModel(
         private set
 
 
-    var productList: MutableStateFlow<MutableList<Product>> = MutableStateFlow(mutableListOf())
+    var productList: MutableStateFlow<List<Product>> = MutableStateFlow(emptyList())
         private set
 
     private val loadedPages = hashSetOf<Int>()
@@ -142,7 +142,7 @@ class MyProductsViewModel(
         }
     }
 
-    fun deleteProduct(productId: Long, index: Int) {
+    fun deleteProduct(productId: Long) {
         uiState.value = DeletingProduct
 
         AppScope.launch {
@@ -153,9 +153,10 @@ class MyProductsViewModel(
 
                 DeleteProductUseCase.Result.ProductDeleted -> {
                     val latestPage = productList.value
-                    latestPage.removeAt(index)
-                    productList.value = latestPage
-                    ProductDeleted
+                    productList.value -= latestPage
+                    ProductDeleted.also {
+                        reloadLatestPage()
+                    }
                 }
 
                 is DeleteProductUseCase.Result.Error -> {

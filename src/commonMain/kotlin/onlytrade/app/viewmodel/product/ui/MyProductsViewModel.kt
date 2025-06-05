@@ -10,18 +10,24 @@ import onlytrade.app.viewmodel.login.repository.LoginRepository
 import onlytrade.app.viewmodel.product.repository.data.db.Product
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.AddOfferApiError
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.DeleteProductApiError
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.DeletingProduct
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.GetProductsApiError
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.Idle
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.LoadingProducts
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.MakingOffer
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.OfferMade
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.OffersExceeded
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.ProductDeleted
+import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.ProductInTrade
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.ProductsNotFound
 import onlytrade.app.viewmodel.product.ui.state.MyProductsUiState.SelectionActive
+import onlytrade.app.viewmodel.product.ui.usecase.DeleteProductUseCase
 import onlytrade.app.viewmodel.product.ui.usecase.OfferUseCase
 
 class MyProductsViewModel(
     private val getProductsUseCase: GetProductsUseCase,
+    private val deleteProductUseCase: DeleteProductUseCase,
     private val offerUseCase: OfferUseCase,
     private val loginRepository: LoginRepository
 ) : ViewModel() {
@@ -49,6 +55,11 @@ class MyProductsViewModel(
      */
     fun idle() {
         uiState.value = Idle
+    }
+
+    private fun reloadLatestPage() {
+        removeLoadedPage()
+        getProducts()
     }
 
     fun getProducts() {
@@ -127,6 +138,31 @@ class MyProductsViewModel(
                     OfferMade(result.offer)
                 }
 
+            }
+        }
+    }
+
+    fun deleteProduct(productId: Long) {
+        uiState.value = DeletingProduct
+
+        AppScope.launch {
+            uiState.value = when (val result = deleteProductUseCase(productId)) {
+                DeleteProductUseCase.Result.ProductInTrade -> {
+                    ProductInTrade
+                }
+
+                DeleteProductUseCase.Result.ProductDeleted -> {
+                    val latestPage = productList.value
+                    productList.value -= latestPage
+                    ProductDeleted.also {
+                        reloadLatestPage()
+                    }
+                }
+
+                is DeleteProductUseCase.Result.Error -> {
+                    uiState.value = GetProductsApiError(result.error)
+                    DeleteProductApiError(result.error)
+                }
             }
         }
     }

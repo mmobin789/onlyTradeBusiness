@@ -1,8 +1,8 @@
-package onlytrade.app.viewmodel.product.ui.nav
+package onlytrade.app.viewmodel.trades.ui
 
 import kotlinx.coroutines.flow.MutableSharedFlow
 
-object ProductDetailNav {
+object MyTradesNav {
     var events = MutableSharedFlow<Event>()
         private set
 
@@ -10,6 +10,6 @@ object ProductDetailNav {
 
 
     sealed class Event {
-        data class TradeProducts(val productIds: LinkedHashSet<Long>) : Event()
+        data object RefreshMyTrades : Event()
     }
 }

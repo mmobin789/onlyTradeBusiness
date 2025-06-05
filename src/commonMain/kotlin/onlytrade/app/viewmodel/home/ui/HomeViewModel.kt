@@ -28,6 +28,8 @@ class HomeViewModel(
 
     private val loadedPages = hashSetOf<Int>()
 
+    private var latestPage: List<Product>? = null
+
     private var productsNotFound = false
 
     val productPageSizeExpected = 10
@@ -39,9 +41,8 @@ class HomeViewModel(
     init {
         viewModelScope.launch {
             HomeNav.events.collect { event ->
-                when (event) {
-                    HomeNav.Event.RefreshHome -> refreshHome = true
-                }
+                refreshHome = event == HomeNav.Event.RefreshHome
+
             }
         }
     }
@@ -58,7 +59,9 @@ class HomeViewModel(
         if (refreshHome) {
             refreshHome = false
             removeLoadedPage()
-            productList.value = emptyList()
+            latestPage?.let {
+                productList.value -= it
+            }
             getProducts()
         }
     }
@@ -89,6 +92,8 @@ class HomeViewModel(
                     val productPage = result.products.filterNot { product ->
                         product.userId == loginRepository.user()?.id
                     }
+
+                    latestPage = productPage
 
                     if (productPage.size == productPageSizeExpected)
                         productsPageNo++

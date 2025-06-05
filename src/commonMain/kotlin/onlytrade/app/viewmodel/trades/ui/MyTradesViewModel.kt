@@ -25,12 +25,28 @@ class MyTradesViewModel(
     var uiState: MutableStateFlow<MyTradesUiState> = MutableStateFlow(Idle)
         private set
 
+    private var refreshMyTrades = false
+
+
     fun idle() {
         uiState.value = Idle
     }
 
     init {
         getOffersMade()
+        viewModelScope.launch {
+            MyTradesNav.events.collect { event ->
+                refreshMyTrades = event == MyTradesNav.Event.RefreshMyTrades
+            }
+        }
+    }
+
+    fun refreshMyTradesPage() {
+        if (refreshMyTrades) {
+            refreshMyTrades = false
+            getOffersMade()
+            getOffersReceived()
+        }
     }
 
     fun getOffersMade() {

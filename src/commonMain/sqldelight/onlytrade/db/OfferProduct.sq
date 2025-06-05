@@ -1,0 +1,20 @@
+
+CREATE TABLE OfferProduct (
+    offeredProductId INTEGER NOT NULL,
+    offerId INTEGER NOT NULL,
+    PRIMARY KEY (offerId, offeredProductId)
+);
+
+add:
+INSERT OR REPLACE INTO OfferProduct(offeredProductId,offerId)
+VALUES (?,?);
+
+deleteByOfferId:
+DELETE FROM OfferProduct WHERE offerId = ?;
+
+getOfferedProducts:
+SELECT * FROM OfferProduct
+WHERE offerId = ?;
+
+deleteAll:
+DELETE FROM OfferProduct;

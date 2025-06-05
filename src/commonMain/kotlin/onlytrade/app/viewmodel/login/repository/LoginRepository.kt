@@ -48,8 +48,10 @@ class LoginRepository(
         jwtToken = null
         onlyTradeDB.run {
             transaction {
+                onlyTradeDB.userQueries.deleteAll()
                 onlyTradeDB.productQueries.deleteAll()
                 onlyTradeDB.offerQueries.deleteAll()
+                onlyTradeDB.offerProductQueries.deleteAll()
             }
         }
     }

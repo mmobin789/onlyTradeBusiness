@@ -62,6 +62,13 @@ class MyProductsViewModel(
         getProducts()
     }
 
+    fun reloadProducts() {
+        productsNotFound = false
+        removeLoadedPage()
+        getProducts()
+    }
+
+
     fun getProducts() {
 
         /**

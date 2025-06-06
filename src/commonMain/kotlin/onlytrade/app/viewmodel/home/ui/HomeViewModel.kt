@@ -55,6 +55,9 @@ class HomeViewModel(
         uiState.value = Idle
     }
 
+    /**
+     * This method reloads the current page of home screen.
+     */
     fun refreshHomePage() {
         if (refreshHome) {
             refreshHome = false
@@ -64,6 +67,12 @@ class HomeViewModel(
             }
             getProducts()
         }
+    }
+
+    fun reloadProducts() {
+        productsNotFound = false
+        removeLoadedPage()
+        getProducts()
     }
 
 

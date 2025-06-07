@@ -1,5 +1,6 @@
 package onlytrade.app.viewmodel.login.repository.data.db
 
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -11,6 +12,7 @@ data class User(
     val name: String?,
     val verified: Boolean,
     val docs: String?,
-    val createdAt: String,
-    val updatedAt: String,
+    val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime,
+    val userType: UserType
 )

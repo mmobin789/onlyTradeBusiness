@@ -1,7 +1,9 @@
 package onlytrade.app.viewmodel.login.di
 
 import onlytrade.app.viewmodel.login.repository.LoginRepository
+import onlytrade.app.viewmodel.login.repository.data.remote.api.GetApprovalUsersApi
 import onlytrade.app.viewmodel.login.repository.data.remote.api.LoginApi
+import onlytrade.app.viewmodel.login.repository.data.remote.api.VerifyUserApi
 import onlytrade.app.viewmodel.login.ui.KycViewModel
 import onlytrade.app.viewmodel.login.ui.LoginViewModel
 import onlytrade.app.viewmodel.login.ui.usecase.EmailLoginUseCase
@@ -20,5 +22,7 @@ val loginModule = module {
     factoryOf(::KycUseCase)
     factoryOf(::LoginRepository)
     factoryOf(::LoginApi)
+    factoryOf(::GetApprovalUsersApi)
+    factoryOf(::VerifyUserApi)
 }
 

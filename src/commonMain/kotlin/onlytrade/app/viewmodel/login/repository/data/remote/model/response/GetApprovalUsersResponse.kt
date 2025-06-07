@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import onlytrade.app.viewmodel.login.repository.data.db.User
 
 @Serializable
-data class GetApprovalUsers(
+data class GetApprovalUsersResponse(
     val statusCode: Int? = null,
     val users: List<User>? = null,
     val error: String? = null

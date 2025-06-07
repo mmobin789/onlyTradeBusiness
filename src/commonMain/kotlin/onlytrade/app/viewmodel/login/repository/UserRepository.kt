@@ -2,11 +2,15 @@ package onlytrade.app.viewmodel.login.repository
 
 import com.russhwolf.settings.Settings
 import io.ktor.http.HttpStatusCode
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.json.Json
 import onlytrade.app.viewmodel.login.repository.data.LoginConst.JWT_USER
 import onlytrade.app.viewmodel.login.repository.data.db.User
+import onlytrade.app.viewmodel.login.repository.data.db.UserType
+import onlytrade.app.viewmodel.login.repository.data.remote.api.GetApprovalUsersApi
 import onlytrade.app.viewmodel.login.repository.data.remote.api.GetUserDetailApi
 import onlytrade.app.viewmodel.login.repository.data.remote.api.KycApi
+import onlytrade.app.viewmodel.login.repository.data.remote.api.VerifyUserApi
 import onlytrade.app.viewmodel.login.repository.data.remote.model.request.KycRequest
 import onlytrade.app.viewmodel.login.repository.data.remote.model.response.GetUserDetailResponse
 import onlytrade.app.viewmodel.login.repository.data.remote.model.response.KycResponse
@@ -17,6 +21,8 @@ class UserRepository(
     private val localPrefs: Settings,
     private val kycApi: KycApi,
     private val getUserDetailApi: GetUserDetailApi,
+    private val verifyUserApi: VerifyUserApi,
+    private val getApprovalUsersApi: GetApprovalUsersApi,
     onlyTradeDB: OnlyTradeDB
 ) {
     private val dao = onlyTradeDB.userQueries
@@ -61,7 +67,18 @@ class UserRepository(
 
     private fun addUser(user: User) = dao.transaction {
         user.run {
-            dao.insert(id, phone, email, name, verified, true, docs, createdAt, updatedAt)
+            dao.insert(
+                id,
+                phone,
+                email,
+                name,
+                verified,
+                true,
+                docs,
+                createdAt.toString(),
+                updatedAt.toString(),
+                userType.ordinal.toLong()
+            )
         }
     }
 
@@ -74,8 +91,9 @@ class UserRepository(
             name = name,
             verified = verified,
             docs = docs,
-            createdAt = createdAt,
-            updatedAt = updatedAt
+            createdAt = LocalDateTime.parse(createdAt),
+            updatedAt = LocalDateTime.parse(updatedAt),
+            userType = if (user.userType == 0L) UserType.ADMIN else UserType.CUSTOMER
         )
     }
 }

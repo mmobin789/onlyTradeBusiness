@@ -11,5 +11,9 @@ sealed class AdminUiState {
     data class GetApprovalProductsApiError(val error: String) : AdminUiState()
     data object LoadingUsers : AdminUiState()
     data object UsersNotFound : AdminUiState()
+    data object VerifyingUser : AdminUiState()
+    data object UserVerified : AdminUiState()
+    data object UserNotFound : AdminUiState()
+    data class VerifyUserApiError(val error: String) : AdminUiState()
     data class GetApprovalUsersApiError(val error: String) : AdminUiState()
 }

@@ -12,8 +12,10 @@ import onlytrade.app.viewmodel.login.repository.data.remote.api.GetUserDetailApi
 import onlytrade.app.viewmodel.login.repository.data.remote.api.KycApi
 import onlytrade.app.viewmodel.login.repository.data.remote.api.VerifyUserApi
 import onlytrade.app.viewmodel.login.repository.data.remote.model.request.KycRequest
+import onlytrade.app.viewmodel.login.repository.data.remote.model.response.GetApprovalUsersResponse
 import onlytrade.app.viewmodel.login.repository.data.remote.model.response.GetUserDetailResponse
 import onlytrade.app.viewmodel.login.repository.data.remote.model.response.KycResponse
+import onlytrade.app.viewmodel.login.repository.data.remote.model.response.VerifyUserResponse
 import onlytrade.db.OnlyTradeDB
 
 class UserRepository(
@@ -26,6 +28,19 @@ class UserRepository(
     onlyTradeDB: OnlyTradeDB
 ) {
     private val dao = onlyTradeDB.userQueries
+
+
+    suspend fun getApprovalUsers() =
+        loginRepository.jwtToken()?.let { jwtToken ->
+            getApprovalUsersApi.getApprovalUsers(jwtToken)
+        } ?: GetApprovalUsersResponse(statusCode = HttpStatusCode.Unauthorized.value)
+
+
+    suspend fun verifyUser(userId: Long) =
+        loginRepository.jwtToken()?.let { jwtToken ->
+            verifyUserApi.verifyUser(jwtToken, userId)
+        } ?: VerifyUserResponse(statusCode = HttpStatusCode.Unauthorized.value)
+
 
     suspend fun getUserDetail(userId: Long) =
         loginRepository.jwtToken()?.let {

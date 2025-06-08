@@ -14,6 +14,7 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import onlytrade.app.AppConfig
 import onlytrade.app.AppConfig.Json
+import onlytrade.app.viewmodel.admin.di.adminModule
 import onlytrade.app.viewmodel.home.di.homeModule
 import onlytrade.app.viewmodel.login.di.loginModule
 import onlytrade.app.viewmodel.product.di.addProductModule
@@ -78,6 +79,7 @@ object OTBusinessModule {
                 commonModule,
                 splashModule,
                 loginModule,
+                adminModule,
                 homeModule,
                 addProductModule,
                 myProductsModule,

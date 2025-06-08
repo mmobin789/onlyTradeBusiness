@@ -14,11 +14,14 @@ import onlytrade.app.viewmodel.product.repository.data.ProductMapper.toProduct
 import onlytrade.app.viewmodel.product.repository.data.db.Product
 import onlytrade.app.viewmodel.product.repository.data.remote.api.AddProductApi
 import onlytrade.app.viewmodel.product.repository.data.remote.api.DeleteProductApi
+import onlytrade.app.viewmodel.product.repository.data.remote.api.GetApprovalProductsApi
 import onlytrade.app.viewmodel.product.repository.data.remote.api.GetProductsApi
+import onlytrade.app.viewmodel.product.repository.data.remote.api.VerifyProductApi
 import onlytrade.app.viewmodel.product.repository.data.remote.request.AddProductRequest
 import onlytrade.app.viewmodel.product.repository.data.remote.response.AddProductResponse
 import onlytrade.app.viewmodel.product.repository.data.remote.response.DeleteProductResponse
 import onlytrade.app.viewmodel.product.repository.data.remote.response.GetProductsResponse
+import onlytrade.app.viewmodel.product.repository.data.remote.response.VerifyProductResponse
 import onlytrade.db.OnlyTradeDB
 
 class ProductRepository(
@@ -26,6 +29,8 @@ class ProductRepository(
     private val addProductApi: AddProductApi,
     private val getProductsApi: GetProductsApi,
     private val deleteProductApi: DeleteProductApi,
+    private val getApprovalProductsApi: GetApprovalProductsApi,
+    private val verifyProductApi: VerifyProductApi,
     private val localPrefs: Settings,
     private val onlyTradeDB: OnlyTradeDB
 ) {
@@ -53,6 +58,17 @@ class ProductRepository(
         statusCode = HttpStatusCode.Unauthorized.value,
         error = HttpStatusCode.Unauthorized.description
     )
+
+    suspend fun getApprovalProducts() =
+        loginRepository.jwtToken()?.let { jwtToken ->
+            getApprovalProductsApi.getApprovalProducts(jwtToken)
+        } ?: GetProductsResponse(statusCode = HttpStatusCode.Unauthorized.value)
+
+    suspend fun verifyProduct(productId: Long) =
+        loginRepository.jwtToken()?.let { jwtToken ->
+            verifyProductApi.verifyProduct(jwtToken, productId)
+        } ?: VerifyProductResponse(statusCode = HttpStatusCode.Unauthorized.value)
+
 
     suspend fun getProducts(
         pageNo: Int, pageSize: Int, userId: Long? = null

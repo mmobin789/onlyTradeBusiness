@@ -47,6 +47,10 @@ class AdminViewModel(
     private var latestProductPage: List<Product>? = null
     private var latestUserPage: List<User>? = null
 
+    init {
+        getUsers()
+    }
+
 
     /**
      * This would only reset the UI state flow.
@@ -57,7 +61,7 @@ class AdminViewModel(
     }
 
 
-    fun getProducts() {
+  fun getProducts() {
         uiState.value = LoadingProducts
 
         viewModelScope.launch {
@@ -75,6 +79,29 @@ class AdminViewModel(
 
                 is GetApprovalProductsUseCase.Result.Error -> {
                     uiState.value = GetApprovalProductsApiError(error = result.error)
+                }
+
+            }
+        }
+    }
+
+    fun getUsers() {
+        uiState.value = LoadingUsers
+
+        viewModelScope.launch {
+            when (val result = getApprovalUsersUseCase()) {
+                is GetApprovalUsersUseCase.Result.ApprovalUsers -> {
+                    usersUiState.value = result.users.also {
+                        latestUserPage = it
+                    }
+                }
+
+                GetApprovalUsersUseCase.Result.UsersNotFound -> {
+                    uiState.value = UsersNotFound
+                }
+
+                is GetApprovalUsersUseCase.Result.Error -> {
+                    uiState.value = GetApprovalUsersApiError(error = result.error)
                 }
 
             }
@@ -105,26 +132,5 @@ class AdminViewModel(
         }
     }
 
-    fun getUsers() {
-        uiState.value = LoadingUsers
 
-        viewModelScope.launch {
-            when (val result = getApprovalUsersUseCase()) {
-                is GetApprovalUsersUseCase.Result.ApprovalUsers -> {
-                    usersUiState.value = result.users.also {
-                        latestUserPage = it
-                    }
-                }
-
-                GetApprovalUsersUseCase.Result.UsersNotFound -> {
-                    uiState.value = UsersNotFound
-                }
-
-                is GetApprovalUsersUseCase.Result.Error -> {
-                    uiState.value = GetApprovalUsersApiError(error = result.error)
-                }
-
-            }
-        }
-    }
 }

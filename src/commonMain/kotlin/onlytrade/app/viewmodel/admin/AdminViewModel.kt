@@ -13,9 +13,13 @@ import onlytrade.app.viewmodel.admin.ui.AdminUiState.LoadingUsers
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.ProductNotFound
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.ProductVerified
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.ProductsNotFound
+import onlytrade.app.viewmodel.admin.ui.AdminUiState.UserNotFound
+import onlytrade.app.viewmodel.admin.ui.AdminUiState.UserVerified
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.UsersNotFound
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.VerifyProductApiError
+import onlytrade.app.viewmodel.admin.ui.AdminUiState.VerifyUserApiError
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.VerifyingProduct
+import onlytrade.app.viewmodel.admin.ui.AdminUiState.VerifyingUser
 import onlytrade.app.viewmodel.admin.usecase.GetApprovalProductsUseCase
 import onlytrade.app.viewmodel.admin.usecase.GetApprovalUsersUseCase
 import onlytrade.app.viewmodel.admin.usecase.VerifyProductUseCase
@@ -43,6 +47,10 @@ class AdminViewModel(
     private var latestProductPage: List<Product>? = null
     private var latestUserPage: List<User>? = null
 
+    init {
+        getUsers()
+    }
+
 
     /**
      * This would only reset the UI state flow.
@@ -53,7 +61,7 @@ class AdminViewModel(
     }
 
 
-    fun getProducts() {
+  fun getProducts() {
         uiState.value = LoadingProducts
 
         viewModelScope.launch {
@@ -73,18 +81,6 @@ class AdminViewModel(
                     uiState.value = GetApprovalProductsApiError(error = result.error)
                 }
 
-            }
-        }
-    }
-
-    fun verifyProduct(productId: Long) {
-        uiState.value = VerifyingProduct
-
-        viewModelScope.launch {
-            uiState.value = when (val result = verifyProductsUseCase(productId)) {
-                VerifyProductUseCase.Result.ProductApproved -> ProductVerified
-                VerifyProductUseCase.Result.ProductNotFound -> ProductNotFound
-                is VerifyProductUseCase.Result.Error -> VerifyProductApiError(error = result.error)
             }
         }
     }
@@ -111,4 +107,30 @@ class AdminViewModel(
             }
         }
     }
+
+    fun verifyProduct(productId: Long) {
+        uiState.value = VerifyingProduct
+
+        viewModelScope.launch {
+            uiState.value = when (val result = verifyProductsUseCase(productId)) {
+                VerifyProductUseCase.Result.ProductApproved -> ProductVerified
+                VerifyProductUseCase.Result.ProductNotFound -> ProductNotFound
+                is VerifyProductUseCase.Result.Error -> VerifyProductApiError(error = result.error)
+            }
+        }
+    }
+
+    fun verifyUser(userId: Long) {
+        uiState.value = VerifyingUser
+
+        viewModelScope.launch {
+            uiState.value = when (val result = verifyUserUseCase(userId)) {
+                VerifyUserUseCase.Result.VerifiedUser -> UserVerified
+                VerifyUserUseCase.Result.UserNotFound -> UserNotFound
+                is VerifyUserUseCase.Result.Error -> VerifyUserApiError(error = result.error)
+            }
+        }
+    }
+
+
 }

@@ -2,6 +2,7 @@ package onlytrade.app.viewmodel.login.ui.state
 
 sealed class KycUiState {
     data object Idle : KycUiState()
+    data object BlankNameError : KycUiState()
     data object BlankMobileInputError : KycUiState()
     data object BlankEmailInputError : KycUiState()
     data object EmailFormatInputError : KycUiState()

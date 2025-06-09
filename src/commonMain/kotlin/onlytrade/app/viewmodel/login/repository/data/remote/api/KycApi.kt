@@ -28,20 +28,30 @@ class KycApi(private val appConfig: AppConfig, private val client: HttpClient) {
                     "Bearer $jwtToken"
                 )
                 setBody(MultiPartFormDataContent(formData {
-                    kycRequest.docs.forEachIndexed { index, byteArray ->
-                        //product Images are guaranteed to be non null here.
-                        val key = "userDoc${index + 1}"
-                        append(key, byteArray, Headers.build {
-                            append(
-                                HttpHeaders.ContentType,
-                                "image/jpeg"
-                            ) // ✅ Correct Content-Type
-                            append(
-                                HttpHeaders.ContentDisposition,
-                                "form-data; name=\"userDoc\"; filename=\"$key.jpg\""
-                            ) // ✅ Ensures it's treated as a file
-                        })
-                    }
+
+                    append("name", kycRequest.name)
+
+                    append("photoId", kycRequest.photoId, Headers.build {
+                        append(
+                            HttpHeaders.ContentType,
+                            "image/jpeg"
+                        ) // ✅ Correct Content-Type
+                        append(
+                            HttpHeaders.ContentDisposition,
+                            "form-data; name=\"photoId\"; filename=\"photoId.jpg\""
+                        ) // ✅ Ensures it's treated as a file
+                    })
+
+                    append("photo", kycRequest.photo, Headers.build {
+                        append(
+                            HttpHeaders.ContentType,
+                            "image/jpeg"
+                        ) // ✅ Correct Content-Type
+                        append(
+                            HttpHeaders.ContentDisposition,
+                            "form-data; name=\"photo\"; filename=\"photo.jpg\""
+                        ) // ✅ Ensures it's treated as a file
+                    })
                 }))
             }
             httpResponse.body<KycResponse>()

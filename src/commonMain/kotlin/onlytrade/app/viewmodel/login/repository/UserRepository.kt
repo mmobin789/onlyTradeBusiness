@@ -60,9 +60,9 @@ class UserRepository(
             user?.also(::addUser)
         }
 
-    suspend fun uploadDocs(docs: List<ByteArray>) =
+    suspend fun uploadDocs(name: String, photoId: ByteArray, photo: ByteArray) =
         loginRepository.jwtToken()
-            ?.let { jwtToken -> kycApi.uploadDocs(jwtToken, KycRequest(docs)) }
+            ?.let { jwtToken -> kycApi.uploadDocs(jwtToken, KycRequest(name, photoId, photo)) }
             ?: KycResponse(
                 statusCode = HttpStatusCode.Unauthorized.value,
                 error = HttpStatusCode.Unauthorized.description
@@ -89,7 +89,8 @@ class UserRepository(
                 name,
                 verified,
                 true,
-                docs,
+                photoId,
+                photo,
                 createdAt.toString(),
                 updatedAt.toString(),
                 userType.ordinal.toLong()
@@ -105,7 +106,8 @@ class UserRepository(
             password = null,
             name = name,
             verified = verified,
-            docs = docs,
+            photoId = photoId,
+            photo = photo,
             createdAt = LocalDateTime.parse(createdAt),
             updatedAt = LocalDateTime.parse(updatedAt),
             userType = if (user.userType == 0L) UserType.ADMIN else UserType.CUSTOMER

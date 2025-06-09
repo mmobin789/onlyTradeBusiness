@@ -11,7 +11,8 @@ data class User(
     val password: String?,
     val name: String?,
     val verified: Boolean,
-    val docs: String?,
+    val photoId: String?,
+    val photo: String?,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val userType: UserType

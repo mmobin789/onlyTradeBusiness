@@ -10,6 +10,7 @@ import onlytrade.app.viewmodel.login.ui.LoginViewModel.Companion.pakistaniMobile
 import onlytrade.app.viewmodel.login.ui.state.KycUiState
 import onlytrade.app.viewmodel.login.ui.state.KycUiState.BlankEmailInputError
 import onlytrade.app.viewmodel.login.ui.state.KycUiState.BlankMobileInputError
+import onlytrade.app.viewmodel.login.ui.state.KycUiState.BlankNameError
 import onlytrade.app.viewmodel.login.ui.state.KycUiState.DocsIncomplete
 import onlytrade.app.viewmodel.login.ui.state.KycUiState.EmailFormatInputError
 import onlytrade.app.viewmodel.login.ui.state.KycUiState.Idle
@@ -34,7 +35,9 @@ class KycViewModel(
     fun isEmailProvided() = loginRepository.user()?.email.isNullOrBlank().not()
 
     fun uploadDocs(
-        docs: List<ByteArray>,
+        name: String,
+        photoId: ByteArray?,
+        photo: ByteArray?,
         email: String?,
         mobileNo: String?
     ) {
@@ -60,8 +63,12 @@ class KycViewModel(
                 return
             }
         }
+        if (name.isBlank()) {
+            uiState.value = BlankNameError
+            return
+        }
 
-        if (docs.isEmpty() || docs.size < 2) {
+        if (photoId == null || photo == null) {
             uiState.value = DocsIncomplete
             return
         }
@@ -70,7 +77,7 @@ class KycViewModel(
 
 
         AppScope.launch {
-            uiState.value = when (val result = kycUseCase(docs)) {
+            uiState.value = when (val result = kycUseCase(name, photoId, photo)) {
                 KycUseCase.Result.DocsInReview -> InReview
                 is KycUseCase.Result.Error -> KycApiError(error = result.error)
             }

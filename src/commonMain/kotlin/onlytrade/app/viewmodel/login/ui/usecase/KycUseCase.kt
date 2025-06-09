@@ -6,13 +6,14 @@ import onlytrade.app.IODispatcher
 import onlytrade.app.viewmodel.login.repository.UserRepository
 
 class KycUseCase(private val userRepository: UserRepository) {
-    suspend operator fun invoke(docs: List<ByteArray>) = withContext(IODispatcher) {
-        userRepository.uploadDocs(docs).run {
-            if (statusCode == HttpStatusCode.Accepted.value) // docs processing for review.
-                Result.DocsInReview
-            else Result.Error(error = error ?: "Something went wrong.")
+    suspend operator fun invoke(name: String, photoId: ByteArray, photo: ByteArray) =
+        withContext(IODispatcher) {
+            userRepository.uploadDocs(name, photoId, photo).run {
+                if (statusCode == HttpStatusCode.Accepted.value) // docs processing for review.
+                    Result.DocsInReview
+                else Result.Error(error = error ?: "Something went wrong.")
+            }
         }
-    }
 
     sealed class Result {
         data object DocsInReview : Result()

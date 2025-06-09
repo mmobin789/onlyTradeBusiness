@@ -7,15 +7,16 @@ CREATE TABLE User (
     name TEXT,
     verified INTEGER AS Boolean NOT NULL,
     loggedIn INTEGER AS Boolean NOT NULL,
-    docs TEXT,
+    photoId TEXT,
+    photo TEXT,
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL,
     userType INTEGER NOT NULL
 );
 
 insert:
-INSERT OR REPLACE INTO User(id,phone,email,name,verified,loggedIn,docs,createdAt,updatedAt,userType)
-VALUES (?,?,?,?,?,?,?,?,?,?);
+INSERT OR REPLACE INTO User(id,phone,email,name,verified,loggedIn,photoId,photo,createdAt,updatedAt,userType)
+VALUES (?,?,?,?,?,?,?,?,?,?,?);
 
 getById:
 SELECT * FROM User

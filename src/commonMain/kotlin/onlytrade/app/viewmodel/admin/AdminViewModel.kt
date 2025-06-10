@@ -10,6 +10,7 @@ import onlytrade.app.viewmodel.admin.ui.AdminUiState.GetApprovalUsersApiError
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.Idle
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.LoadingProducts
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.LoadingUsers
+import onlytrade.app.viewmodel.admin.ui.AdminUiState.LoggedOut
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.ProductNotFound
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.ProductVerified
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.ProductsNotFound
@@ -26,13 +27,15 @@ import onlytrade.app.viewmodel.admin.usecase.VerifyProductUseCase
 import onlytrade.app.viewmodel.admin.usecase.VerifyUserUseCase
 import onlytrade.app.viewmodel.login.repository.data.db.User
 import onlytrade.app.viewmodel.product.repository.data.db.Product
+import onlytrade.app.viewmodel.profile.usecase.LogoutUseCase
 
 
 class AdminViewModel(
     private val verifyUserUseCase: VerifyUserUseCase,
     private val verifyProductsUseCase: VerifyProductUseCase,
     private val getApprovalProductsUseCase: GetApprovalProductsUseCase,
-    private val getApprovalUsersUseCase: GetApprovalUsersUseCase
+    private val getApprovalUsersUseCase: GetApprovalUsersUseCase,
+    private val logoutUseCase: LogoutUseCase
 ) : ViewModel() {
 
     var uiState: MutableStateFlow<AdminUiState> = MutableStateFlow(Idle)
@@ -61,7 +64,7 @@ class AdminViewModel(
     }
 
 
-  fun getProducts() {
+    fun getProducts() {
         uiState.value = LoadingProducts
 
         viewModelScope.launch {
@@ -69,6 +72,7 @@ class AdminViewModel(
                 is GetApprovalProductsUseCase.Result.ApprovalProducts -> {
                     productsUiState.value = result.products.also {
                         latestProductPage = it
+                        usersUiState.value = emptyList()
                         idle()
                     }
                 }
@@ -93,6 +97,8 @@ class AdminViewModel(
                 is GetApprovalUsersUseCase.Result.ApprovalUsers -> {
                     usersUiState.value = result.users.also {
                         latestUserPage = it
+                        productsUiState.value = emptyList()
+                        idle()
                     }
                 }
 
@@ -131,6 +137,12 @@ class AdminViewModel(
             }
         }
     }
+    fun logOut() {
+        viewModelScope.launch {
+            uiState.value = LoggedOut
+            logoutUseCase()
 
+        }
+    }
 
 }

@@ -77,7 +77,7 @@ class KycViewModel(
 
 
         AppScope.launch {
-            uiState.value = when (val result = kycUseCase(name, photoId, photo)) {
+            uiState.value = when (val result = kycUseCase(name, photoId, photo, email, mobileNo)) {
                 KycUseCase.Result.DocsInReview -> InReview
                 is KycUseCase.Result.Error -> KycApiError(error = result.error)
             }

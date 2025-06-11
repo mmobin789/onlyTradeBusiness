@@ -1,6 +1,12 @@
 package onlytrade.app.viewmodel.login.repository.data.remote.model.request
 
-data class KycRequest(val name: String, val photoId: ByteArray, val photo: ByteArray) {
+data class KycRequest(
+    val name: String,
+    val photoId: ByteArray,
+    val photo: ByteArray,
+    val email: String?,
+    val phone: String?
+) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

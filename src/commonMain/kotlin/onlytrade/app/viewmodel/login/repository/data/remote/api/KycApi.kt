@@ -31,6 +31,14 @@ class KycApi(private val appConfig: AppConfig, private val client: HttpClient) {
 
                     append("name", kycRequest.name)
 
+                    kycRequest.email?.let {
+                        append("email", it)
+                    }
+
+                    kycRequest.phone?.let {
+                        append("phone", it)
+                    }
+
                     append("photoId", kycRequest.photoId, Headers.build {
                         append(
                             HttpHeaders.ContentType,

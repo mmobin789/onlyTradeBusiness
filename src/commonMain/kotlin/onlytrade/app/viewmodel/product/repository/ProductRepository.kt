@@ -35,6 +35,7 @@ class ProductRepository(
     private val onlyTradeDB: OnlyTradeDB
 ) {
     private val productsLastUpdatedAt = "PRODUCTS_LAST_UPDATED_AT"
+    private val myProductsLastUpdatedAt = "MY_PRODUCTS_LAST_UPDATED_AT"
 
     private val dao = onlyTradeDB.productQueries
     private val offerProductDao = onlyTradeDB.offerProductQueries
@@ -71,8 +72,42 @@ class ProductRepository(
 
 
     suspend fun getProducts(
-        pageNo: Int, pageSize: Int, userId: Long? = null
+        pageNo: Int, pageSize: Int
     ) = localPrefs.getStringOrNull(productsLastUpdatedAt)?.run {
+        val productUpdateDateTime = Instant.parse(this)
+        val now = Clock.System.now()
+        val minutesDiff = productUpdateDateTime.until(now, DateTimeUnit.MINUTE)
+        val updateRequired = minutesDiff >= 1  // 1 minute //todo need to update server sync time.
+
+        if (updateRequired) {
+            getProductsApi(pageNo, pageSize)
+        } else {
+            val offset = if (pageNo > 1) {    // 2..20..3..40..4..60
+                ((pageSize * pageNo) - pageSize).toLong()
+            } else 0
+
+            val localProducts = dao.selectPaged(pageSize.toLong(), offset)
+
+            return GetProductsResponse().run {
+                val localProductList = dao.transactionWithResult {
+                    localProducts.executeAsList().map(::toProduct)
+                }
+                if (localProductList.isEmpty()) {
+                    copy(statusCode = HttpStatusCode.NotFound.value)
+                } else {
+                    copy(
+                        statusCode = HttpStatusCode.PartialContent.value,
+                        products = localProductList
+                    )
+                }
+
+            }
+        }
+    } ?: getProductsApi(pageNo, pageSize)
+
+    suspend fun getMyProducts(
+        pageNo: Int, pageSize: Int, userId: Long
+    ) = localPrefs.getStringOrNull(myProductsLastUpdatedAt)?.run {
         val productUpdateDateTime = Instant.parse(this)
         val now = Clock.System.now()
         val minutesDiff = productUpdateDateTime.until(now, DateTimeUnit.MINUTE)
@@ -85,17 +120,14 @@ class ProductRepository(
                 ((pageSize * pageNo) - pageSize).toLong()
             } else 0
 
-            val localProducts = if (userId != null) dao.selectUsersPaged(
-                userId.toLong(), pageSize.toLong(), offset
-            )
-            else dao.selectPaged(pageSize.toLong(), offset)
+            val localProducts = dao.selectUsersPaged(userId, pageSize.toLong(), offset)
 
             return GetProductsResponse().run {
                 val localProductList = dao.transactionWithResult {
                     localProducts.executeAsList().map(::toProduct)
                 }
                 if (localProductList.isEmpty()) {
-                    getProductsApi(pageNo, pageSize, userId)
+                    copy(statusCode = HttpStatusCode.NotFound.value)
                 } else {
                     copy(
                         statusCode = HttpStatusCode.PartialContent.value,
@@ -118,11 +150,13 @@ class ProductRepository(
             val products = it.products
 
             if (!products.isNullOrEmpty()) {
-                localPrefs.putString(
-                    productsLastUpdatedAt, Clock.System.now().toString()
-                )
                 addProductsAndOffers(products)
             }
+
+            localPrefs.putString(
+                if (userId == null) productsLastUpdatedAt else myProductsLastUpdatedAt,
+                Clock.System.now().toString()
+            )
         }
     }
 

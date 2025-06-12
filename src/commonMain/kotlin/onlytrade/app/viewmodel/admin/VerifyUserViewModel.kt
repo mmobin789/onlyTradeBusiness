@@ -4,18 +4,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import onlytrade.app.viewmodel.admin.ui.UserDetailUiState
-import onlytrade.app.viewmodel.admin.ui.UserDetailUiState.Idle
-import onlytrade.app.viewmodel.admin.ui.UserDetailUiState.UserNotFound
-import onlytrade.app.viewmodel.admin.ui.UserDetailUiState.UserVerified
-import onlytrade.app.viewmodel.admin.ui.UserDetailUiState.VerifyUserApiError
-import onlytrade.app.viewmodel.admin.ui.UserDetailUiState.VerifyingUser
+import onlytrade.app.viewmodel.admin.ui.VerifyUserUiState
+import onlytrade.app.viewmodel.admin.ui.VerifyUserUiState.Idle
+import onlytrade.app.viewmodel.admin.ui.VerifyUserUiState.UserNotFound
+import onlytrade.app.viewmodel.admin.ui.VerifyUserUiState.UserVerified
+import onlytrade.app.viewmodel.admin.ui.VerifyUserUiState.VerifyUserApiError
+import onlytrade.app.viewmodel.admin.ui.VerifyUserUiState.VerifyingUser
 import onlytrade.app.viewmodel.admin.usecase.VerifyUserUseCase
 
-class UserDetailViewModel(
+class VerifyUserViewModel(
     private val verifyUserUseCase: VerifyUserUseCase
 ) : ViewModel() {
-    var uiState: MutableStateFlow<UserDetailUiState> = MutableStateFlow(Idle)
+    var uiState: MutableStateFlow<VerifyUserUiState> = MutableStateFlow(Idle)
         private set
 
     fun idle() {

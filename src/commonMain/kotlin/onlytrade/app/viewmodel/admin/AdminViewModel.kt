@@ -11,12 +11,8 @@ import onlytrade.app.viewmodel.admin.ui.AdminUiState.Idle
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.LoadingProducts
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.LoadingUsers
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.LoggedOut
-import onlytrade.app.viewmodel.admin.ui.AdminUiState.ProductNotFound
-import onlytrade.app.viewmodel.admin.ui.AdminUiState.ProductVerified
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.ProductsNotFound
 import onlytrade.app.viewmodel.admin.ui.AdminUiState.UsersNotFound
-import onlytrade.app.viewmodel.admin.ui.AdminUiState.VerifyProductApiError
-import onlytrade.app.viewmodel.admin.ui.AdminUiState.VerifyingProduct
 import onlytrade.app.viewmodel.admin.usecase.GetApprovalProductsUseCase
 import onlytrade.app.viewmodel.admin.usecase.GetApprovalUsersUseCase
 import onlytrade.app.viewmodel.admin.usecase.VerifyProductUseCase
@@ -118,18 +114,6 @@ class AdminViewModel(
                     uiState.value = GetApprovalUsersApiError(error = result.error)
                 }
 
-            }
-        }
-    }
-
-    fun verifyProduct(productId: Long) {
-        uiState.value = VerifyingProduct
-
-        viewModelScope.launch {
-            uiState.value = when (val result = verifyProductsUseCase(productId)) {
-                VerifyProductUseCase.Result.ProductApproved -> ProductVerified
-                VerifyProductUseCase.Result.ProductNotFound -> ProductNotFound
-                is VerifyProductUseCase.Result.Error -> VerifyProductApiError(error = result.error)
             }
         }
     }

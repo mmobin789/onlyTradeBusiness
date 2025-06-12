@@ -107,10 +107,13 @@ class HomeViewModel(
                     if (productPage.size == productPageSizeExpected)
                         productsPageNo++
 
-                    productList.value += productPage
+                    if (productsPageNo == 1 && productPage.isEmpty()) // since single local product table and querying products also returns user's products too.
+                        uiState.value = ProductsNotFound
+                    else {
+                        productList.value += productPage
+                        idle()
+                    }
 
-
-                    idle()
 
                 }
 

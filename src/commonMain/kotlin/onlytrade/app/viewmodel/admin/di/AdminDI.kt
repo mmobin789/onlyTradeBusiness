@@ -1,7 +1,8 @@
 package onlytrade.app.viewmodel.admin.di
 
 import onlytrade.app.viewmodel.admin.AdminViewModel
-import onlytrade.app.viewmodel.admin.UserDetailViewModel
+import onlytrade.app.viewmodel.admin.VerifyProductViewModel
+import onlytrade.app.viewmodel.admin.VerifyUserViewModel
 import onlytrade.app.viewmodel.admin.usecase.GetApprovalProductsUseCase
 import onlytrade.app.viewmodel.admin.usecase.GetApprovalUsersUseCase
 import onlytrade.app.viewmodel.admin.usecase.VerifyProductUseCase
@@ -16,7 +17,8 @@ import org.koin.dsl.module
 
 val adminModule = module {
     viewModelOf(::AdminViewModel)
-    viewModelOf(::UserDetailViewModel)
+    viewModelOf(::VerifyUserViewModel)
+    viewModelOf(::VerifyProductViewModel)
     factoryOf(::VerifyProductUseCase)
     factoryOf(::GetApprovalProductsUseCase)
     factoryOf(::VerifyUserUseCase)

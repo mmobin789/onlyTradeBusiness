@@ -15,16 +15,24 @@ class GetProductsUseCase(
         userId: Long? = null
     ) =
         withContext(IODispatcher) {
-            productRepository.getProducts(pageNo = pageNo, pageSize = pageSize, userId = userId)
-                .run {
-                    when (statusCode) {
-                        HttpStatusCode.PartialContent.value -> Result.ProductPage(products = products!!) //guaranteed non-null products.
-                        HttpStatusCode.NotFound.value -> Result.ProductsNotFound // all products loaded or no products at all.
-                        else -> Result.Error(
-                            error = error ?: "Something went wrong."
-                        ) // something went wrong would be a rare unhandled/unexpected find.
-                    }
+            val response = if (userId != null)
+                productRepository.getMyProducts(
+                    pageNo = pageNo,
+                    pageSize = pageSize,
+                    userId = userId
+                )
+            else
+                productRepository.getProducts(pageNo = pageNo, pageSize = pageSize)
+
+            response.run {
+                when (statusCode) {
+                    HttpStatusCode.PartialContent.value -> Result.ProductPage(products = products!!) //guaranteed non-null products.
+                    HttpStatusCode.NotFound.value -> Result.ProductsNotFound // all products loaded or no products at all.
+                    else -> Result.Error(
+                        error = error ?: "Something went wrong."
+                    ) // something went wrong would be a rare unhandled/unexpected find.
                 }
+            }
         }
 
     sealed class Result {

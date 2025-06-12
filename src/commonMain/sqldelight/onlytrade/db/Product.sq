@@ -38,6 +38,12 @@ getProducts:
 SELECT * FROM Product WHERE id IN ?;
 
 
+selectPagedExcept:
+SELECT * FROM Product
+WHERE userId != ?
+ORDER BY id DESC
+LIMIT ? OFFSET ?;
+
 selectPaged:
 SELECT * FROM Product
 ORDER BY id DESC

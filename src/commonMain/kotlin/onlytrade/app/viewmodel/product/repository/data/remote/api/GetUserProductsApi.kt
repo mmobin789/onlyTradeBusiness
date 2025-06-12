@@ -14,21 +14,24 @@ import onlytrade.app.viewmodel.product.repository.data.remote.response.GetProduc
 /**
  * Client to the GetProducts web service.
  */
-class GetProductsApi(private val appConfig: AppConfig, private val client: HttpClient) {
-    suspend fun getProducts(jwtToken: String?, pageNo: Int, pageSize: Int) =
+class GetUserProductsApi(private val appConfig: AppConfig, private val client: HttpClient) {
+
+    suspend fun getUserProducts(
+        jwtToken: String,
+        pageNo: Int,
+        pageSize: Int
+    ) =
         try {
-            val url = URLBuilder("${appConfig.baseUrl}/products").apply {
+            val url = URLBuilder("${appConfig.baseUrl}/user/products").apply {
                 parameters.append("size", pageSize.toString())
                 parameters.append("page", pageNo.toString())
             }.toString()
 
             client.get(url) {
-                jwtToken?.let {
-                    header(
-                        HttpHeaders.Authorization,
-                        "Bearer $it"
-                    )
-                }
+                header(
+                    HttpHeaders.Authorization,
+                    "Bearer $jwtToken"
+                )
             }.body<GetProductsResponse>()
         } catch (e: Exception) {
             Napier.e {

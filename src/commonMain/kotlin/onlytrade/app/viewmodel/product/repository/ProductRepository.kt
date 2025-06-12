@@ -16,6 +16,7 @@ import onlytrade.app.viewmodel.product.repository.data.remote.api.AddProductApi
 import onlytrade.app.viewmodel.product.repository.data.remote.api.DeleteProductApi
 import onlytrade.app.viewmodel.product.repository.data.remote.api.GetApprovalProductsApi
 import onlytrade.app.viewmodel.product.repository.data.remote.api.GetProductsApi
+import onlytrade.app.viewmodel.product.repository.data.remote.api.GetUserProductsApi
 import onlytrade.app.viewmodel.product.repository.data.remote.api.VerifyProductApi
 import onlytrade.app.viewmodel.product.repository.data.remote.request.AddProductRequest
 import onlytrade.app.viewmodel.product.repository.data.remote.response.AddProductResponse
@@ -28,6 +29,7 @@ class ProductRepository(
     private val loginRepository: LoginRepository,
     private val addProductApi: AddProductApi,
     private val getProductsApi: GetProductsApi,
+    private val getUserProductsApi: GetUserProductsApi,
     private val deleteProductApi: DeleteProductApi,
     private val getApprovalProductsApi: GetApprovalProductsApi,
     private val verifyProductApi: VerifyProductApi,
@@ -82,11 +84,13 @@ class ProductRepository(
         if (updateRequired) {
             getProductsApi(pageNo, pageSize)
         } else {
+            val userId = loginRepository.user()?.id
             val offset = if (pageNo > 1) {    // 2..20..3..40..4..60
                 ((pageSize * pageNo) - pageSize).toLong()
             } else 0
 
-            val localProducts = dao.selectPaged(pageSize.toLong(), offset)
+            val localProducts = userId?.let { dao.selectPagedExcept(it, pageSize.toLong(), offset) }
+                ?: dao.selectPaged(pageSize.toLong(), offset)
 
             return GetProductsResponse().run {
                 val localProductList = dao.transactionWithResult {
@@ -105,6 +109,29 @@ class ProductRepository(
         }
     } ?: getProductsApi(pageNo, pageSize)
 
+
+    private suspend fun getProductsApi(
+        pageNo: Int,
+        pageSize: Int,
+        userId: Long? = null
+    ): GetProductsResponse {
+        deleteProductsAndOffers(pageNo, pageSize, userId)
+        return getProductsApi.getProducts(loginRepository.jwtToken(), pageNo, pageSize)
+            .also {
+                val products = it.products
+
+                if (!products.isNullOrEmpty()) {
+                    addProductsAndOffers(products)
+                }
+
+                localPrefs.putString(
+                    if (userId == null) productsLastUpdatedAt else myProductsLastUpdatedAt,
+                    Clock.System.now().toString()
+                )
+            }
+    }
+
+
     suspend fun getMyProducts(
         pageNo: Int, pageSize: Int, userId: Long
     ) = localPrefs.getStringOrNull(myProductsLastUpdatedAt)?.run {
@@ -114,7 +141,7 @@ class ProductRepository(
         val updateRequired = minutesDiff >= 1  // 1 minute //todo need to update server sync time.
 
         if (updateRequired) {
-            getProductsApi(pageNo, pageSize, userId)
+            getUserProductsApi(pageNo, pageSize, userId)
         } else {
             val offset = if (pageNo > 1) {    // 2..20..3..40..4..60
                 ((pageSize * pageNo) - pageSize).toLong()
@@ -137,28 +164,26 @@ class ProductRepository(
 
             }
         }
-    } ?: getProductsApi(pageNo, pageSize, userId)
+    } ?: getUserProductsApi(pageNo, pageSize, userId)
 
 
-    private suspend fun getProductsApi(
+    private suspend fun getUserProductsApi(
         pageNo: Int,
         pageSize: Int,
         userId: Long? = null
-    ): GetProductsResponse {
+    ) = loginRepository.jwtToken()?.let { jwtToken ->
         deleteProductsAndOffers(pageNo, pageSize, userId)
-        return getProductsApi.getProducts(pageNo, pageSize, userId).also {
-            val products = it.products
+        return getUserProductsApi.getUserProducts(jwtToken, pageNo, pageSize)
+            .also {
+                val products = it.products
 
-            if (!products.isNullOrEmpty()) {
-                addProductsAndOffers(products)
+                if (!products.isNullOrEmpty()) {
+                    addProductsAndOffers(products)
+                }
+
+                localPrefs.putString(myProductsLastUpdatedAt, Clock.System.now().toString())
             }
-
-            localPrefs.putString(
-                if (userId == null) productsLastUpdatedAt else myProductsLastUpdatedAt,
-                Clock.System.now().toString()
-            )
-        }
-    }
+    } ?: GetProductsResponse(statusCode = HttpStatusCode.Unauthorized.value)
 
 
     /**

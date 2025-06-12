@@ -98,22 +98,15 @@ class HomeViewModel(
                 is GetProductsUseCase.Result.ProductPage -> {
                     productsNotFound = false
 
-                    val productPage = result.products.filterNot { product ->
-                        product.userId == loginRepository.user()?.id
-                    }
+                    val productPage = result.products
 
                     latestPage = productPage
 
                     if (productPage.size == productPageSizeExpected)
                         productsPageNo++
 
-                    if (productsPageNo == 1 && productPage.isEmpty()) // since single local product table and querying products also returns user's products too.
-                        uiState.value = ProductsNotFound
-                    else {
-                        productList.value += productPage
-                        idle()
-                    }
-
+                    productList.value += productPage
+                    idle()
 
                 }
 

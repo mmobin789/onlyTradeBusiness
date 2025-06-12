@@ -44,8 +44,16 @@ class AdminViewModel(
     private var latestProductPage: List<Product>? = null
     private var latestUserPage: List<User>? = null
 
+    private var refreshUsers = false
+
     init {
+        viewModelScope.launch {
+            AdminNav.events.collect { event ->
+                refreshUsers = event == AdminNav.Event.RefreshAdminScreen
+            }
+        }
         getUsers()
+
     }
 
 
@@ -57,6 +65,12 @@ class AdminViewModel(
         uiState.value = Idle
     }
 
+    fun refreshUsers() {
+        if (refreshUsers) {
+            refreshUsers = false
+            getUsers()
+        }
+    }
 
     fun getProducts() {
         uiState.value = LoadingProducts

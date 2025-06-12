@@ -27,7 +27,9 @@ class UserDetailViewModel(
 
         viewModelScope.launch {
             uiState.value = when (val result = verifyUserUseCase(userId)) {
-                VerifyUserUseCase.Result.VerifiedUser -> UserVerified
+                VerifyUserUseCase.Result.VerifiedUser -> UserVerified.also {
+                    AdminNav.emit(AdminNav.Event.RefreshAdminScreen)
+                }
                 VerifyUserUseCase.Result.UserNotFound -> UserNotFound
                 is VerifyUserUseCase.Result.Error -> VerifyUserApiError(error = result.error)
             }

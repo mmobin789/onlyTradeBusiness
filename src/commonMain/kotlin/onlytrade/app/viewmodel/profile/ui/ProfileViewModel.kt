@@ -31,12 +31,18 @@ class ProfileViewModel(
     }
 
     private fun getUserDetails() {
-        uiState.value = LoadingKycStatus
-        viewModelScope.launch {
-            when (val result = getUserDetailUseCase(user.id)) {
-                is GetUserDetailUseCase.Result.Detail -> {
 
-                    uiState.value = if (result.user.verified) VerifiedUser else Idle
+        if (user.verified) {
+            uiState.value = VerifiedUser
+            return
+        }
+
+        uiState.value = LoadingKycStatus
+
+        viewModelScope.launch {
+            uiState.value = when (val result = getUserDetailUseCase(user.id)) {
+                is GetUserDetailUseCase.Result.Detail -> {
+                    if (result.user.verified) VerifiedUser else Idle
                 }
 
                 is GetUserDetailUseCase.Result.Error -> UserDetailApiError(result.error)

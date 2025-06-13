@@ -37,6 +37,7 @@ class HomeViewModel(
     private var productsPageNo = 1
 
     val isUserLoggedIn = loginRepository.isUserLoggedIn()
+    val verified = loginRepository.user()?.verified == true
 
     init {
         viewModelScope.launch {
